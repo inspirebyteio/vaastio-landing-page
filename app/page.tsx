@@ -145,6 +145,22 @@ const animationStyles = `
     animation: moveDots 4s linear infinite;
   }
 
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.8s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.8s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.8s ease-out;
+  }
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
