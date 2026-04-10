@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ChevronRight, Building2, Users, Shield, AlertCircle, MessageSquare, Clock } from 'lucide-react'
+import { ChevronRight, Building2, Users, Shield, AlertCircle, MessageSquare, Clock, Hammer, Home as HomeIcon, UserCheck, CheckCircle2, Zap, Sparkles } from 'lucide-react'
 
 const animationStyles = `
   @keyframes fadeInUp {
@@ -62,33 +63,86 @@ const animationStyles = `
 
   @keyframes moveDots {
     0% {
-      background-position: 0px 0px;
+      background-position: 1px 1px;
     }
     100% {
       background-position: 40px 40px;
     }
   }
 
+   @keyframes beam {
+    0% {
+      transform: translateX(-100%) skewX(-15deg);
+    }
+    100% {
+      transform: translateX(200%) skewX(-15deg);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(47, 62, 78, 0.1); }
+    50% { box-shadow: 0 0 35px rgba(47, 62, 78, 0.2); }
+  }
+
+  .bg-grid-premium {
+    background-size: 30px 30px;
+    background-image: radial-gradient(circle, #2f3e4e12 1px, transparent 1px);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+  }
+
+  .animate-beam {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-beam::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: beam 3s infinite;
+  }
+
+  @keyframes moveDots {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50px, -50px, 0);
+    }
+  }
+
   .bg-moving-dots {
-    background-image: radial-gradient(#08080a 2.5px, transparent 3.5px);
-    background-size: 40px 40px;
+    background-image: radial-gradient(#2f3e4e40 2.5px, transparent 2.5px);
+    background-size: 50px 50px;
+    background-repeat: repeat;
+    width: calc(100% + 100px);
+    height: calc(100% + 100px);
+    position: absolute;
+    top: -50px;
+    left: -50px;
+    will-change: transform;
+    backface-visibility: hidden;
     animation: moveDots 4s linear infinite;
-  }
-
-  .animate-fade-in-up {
-    animation: fadeInUp 0.8s ease-out;
-  }
-
-  .animate-fade-in-down {
-    animation: fadeInDown 0.8s ease-out;
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.8s ease-out;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.8s ease-out;
   }
 
   .animate-float {
@@ -171,366 +225,388 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 sm:py-32 lg:py-44">
-        <div className="absolute inset-0 pointer-events-none bg-moving-dots opacity-30" />
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(248, 250, 252, 1) 100%)' }} />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none opacity-20" style={{ backgroundColor: '#2F3E4E' }} />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none opacity-10" style={{ backgroundColor: '#2F3E4E' }} />
-        
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-block mb-6 px-4 py-2 rounded-full border animate-fade-in-down" style={{ borderColor: '#2F3E4E', backgroundColor: 'rgba(47, 62, 78, 0.05)' }}>
-            <p className="text-xs font-bold tracking-widest uppercase" style={{ color: '#2F3E4E' }}>Revolutionizing Society Management</p>
+      <section className="relative overflow-hidden py-24 sm:py-32 lg:py-48">
+        {/* Ambient Beams & Moving Dots */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50/50 rounded-full blur-[120px] mix-blend-multiply animate-pulse-soft" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-slate-100/50 rounded-full blur-[150px] mix-blend-multiply" />
+          <div className="absolute inset-0 opacity-80">
+            <div className="bg-moving-dots" />
           </div>
+          <div className="absolute inset-0 bg-grid-premium opacity-30" />
+        </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight mb-8 tracking-tight animate-fade-in-up">
-            Launch Your
-            
-            <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, #2F3E4E 0%, #4A5F7F 100%)` }}>
-              Society in 30
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.15,
+                delayChildren: 0.2
+              }
+            }
+          }}
+          className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center"
+        >
+          <motion.div
+            variants={{
+              hidden: { y: -20, opacity: 0 },
+              visible: { y: 0, opacity: 1 }
+            }}
+            className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full border border-slate-200 bg-white/50 backdrop-blur-sm shadow-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-slate-400" />
+            <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-slate-500">Society, simplified.</p>
+          </motion.div>
+
+          <motion.h1
+            variants={{
+              hidden: { y: 30, opacity: 0 },
+              visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+            }}
+            className="text-6xl sm:text-7xl lg:text-8xl font-black leading-[1.1] mb-10 tracking-tight"
+            style={{ color: '#0f172a' }}
+          >
+            Where societies start <br />
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, #2F3E4E, #64748b, #2F3E4E)`, backgroundSize: '200% auto' }}>
+              organized, and simplified.
             </span>
-          
-            Minutes
-          </h1>
-          
-          <p className="text-lg sm:text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-light animate-fade-in-up">
-            From builder setup to resident onboarding. Everything you need in one elegant, intuitive platform. Built for modern residential societies.
-          </p>
+          </motion.h1>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up">
+          <motion.div variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }} className="max-w-5xl mx-auto mb-16 px-4">
+            <p className="text-xl sm:text-2xl text-slate-500 mb-12 leading-relaxed font-normal tracking-tight">
+              Built for every person in a society — from setup to security.
+            </p>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+              {[
+                { icon: Hammer, label: 'The Builder', sub: 'Sets it up', delay: 0 },
+                { icon: Users, label: 'The Admin', sub: 'Runs it', delay: 0.1 },
+                { icon: HomeIcon, label: 'The Resident', sub: 'Lives in it', delay: 0.2 },
+                { icon: UserCheck, label: 'The Gatekeeper', sub: 'Protects it', delay: 0.3 },
+              ].map((role, i) => (
+                <motion.div
+                  key={i}
+                  variants={{
+                    hidden: { scale: 0.9, opacity: 0 },
+                    visible: { scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+                  }}
+                  whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                  className="glass-card flex flex-col items-center p-8 rounded-[2.5rem] border border-slate-200/50 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] cursor-default group"
+                >
+                  <div className="mb-6 relative">
+                    <div className="absolute inset-0 bg-slate-900 rounded-2xl blur-xl opacity-0 group-hover:opacity-10 transition-opacity" />
+                    <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg relative z-10">
+                      <role.icon className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900 mb-1">{role.label}</h4>
+                  <p className="text-sm text-slate-500 font-medium">{role.sub}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+              className="flex flex-wrap items-center justify-center gap-6 mb-16"
+            >
+              <div className="px-6 py-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] text-white font-bold"><Building2 size={12} /></div>
+                  <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-400 flex items-center justify-center text-[10px] text-white font-bold"><HomeIcon size={12} /></div>
+                </div>
+                <span className="text-sm font-bold text-slate-600">Towers or Villas</span>
+              </div>
+              <div className="px-6 py-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] text-white font-bold"><AlertCircle size={12} /></div>
+                  <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-400 flex items-center justify-center text-[10px] text-white font-bold"><Users size={12} /></div>
+                </div>
+                <span className="text-sm font-bold text-slate-600">Complaints or Visitors</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+              className="relative inline-block"
+            >
+              <div className="absolute -inset-4 bg-slate-100 rounded-[3rem] blur-2xl opacity-50" />
+              <div className="relative px-10 py-6 rounded-[2.5rem] border border-slate-200 bg-white shadow-xl">
+                <div className="flex items-center gap-5">
+                  <div className="h-14 w-14 rounded-full bg-slate-900 flex items-center justify-center shadow-lg animate-float">
+                    <Clock className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-1">Elite Deployment</p>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
+                      Operational in <span className="text-slate-500">30 minutes.</span>
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            variants={{ hidden: { y: 40, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+            className="flex flex-col sm:flex-row gap-6 justify-center mb-24"
+          >
             <Button
               size="lg"
-              className="text-white hover:opacity-85 transition-all duration-300 font-bold shadow-lg px-8 py-6 text-base"
-              style={{ backgroundColor: '#2F3E4E' }}
+              className="h-20 px-12 text-lg font-black rounded-3xl bg-slate-900 text-white shadow-[0_20px_40px_-10px_rgba(15,23,42,0.3)] hover:shadow-[0_25px_50px_-12px_rgba(15,23,42,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 animate-beam shrink-0"
               onClick={scrollToWaitlist}
             >
               Get Started Free
-              <ChevronRight className="ml-2 h-5 w-5" />
+              <ChevronRight className="ml-3 h-6 w-6" />
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="border-2 font-bold px-8 py-6 text-base transition-all duration-300 hover:shadow-lg"
-              style={{ borderColor: '#2F3E4E', color: '#2F3E4E' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(47, 62, 78, 0.05)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+              className="h-20 px-12 text-lg font-black rounded-3xl border-2 border-slate-200 text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shrink-0"
             >
               Watch Demo
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="relative mx-auto max-w-7xl">
-            <div 
-              className="rounded-3xl border shadow-2xl overflow-hidden animate-scale-in"
-              style={{ borderColor: 'rgba(47, 62, 78, 0.1)', boxShadow: '0 25px 50px -12px rgba(47, 62, 78, 0.25), 0 0 40px rgba(47, 62, 78, 0.1)' }}
+          <motion.div
+            variants={{ hidden: { scale: 0.95, opacity: 0 }, visible: { scale: 1, opacity: 1, transition: { delay: 0.5 } } }}
+            className="relative mx-auto max-w-6xl"
+          >
+            <div className="absolute -inset-10 bg-slate-200/20 blur-[100px] rounded-full" />
+            <div
+            // className="relative rounded-[3rem] border border-slate-200 shadow-2xl overflow-hidden glass-card"
+            // style={{ boxShadow: '0 40px 100px -20px rgba(53, 47, 47, 0.76)' }}
             >
-              <div className="relative w-full aspect-[16/10] sm:aspect-[16/9]">
+              <div className="relative w-full aspect-[16/10]">
                 <Image
                   src="/coming-soon.png"
-                  alt="Vaastio Coming Soon Dashboard"
+                  alt="Vaastio Dashboard"
                   fill
-                  className="object-contain bg-slate-50"
+                  className="object-contain p-4 bg-slate-50"
                   priority
                 />
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* Features Section */}
-      {/* Features Section - Bento Box Layout */}
-      <section id="features" className="py-24 sm:py-32 lg:py-40">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: 'rgba(47, 62, 78, 0.05)', color: '#2F3E4E' }}>
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
-              </span>
-           
-            </div>
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight" style={{ color: '#2F3E4E' }}>
-              Everything You Need,<br/>Crafted with Care
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              We&apos;ve obsessed over the details so you don&apos;t have to. Here&apos;s how Vaastio empowers your community.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {/* Feature 1 - Large / Main */}
-            <div 
-              className="md:col-span-4 lg:col-span-4 rounded-3xl p-8 sm:p-12 transition-all duration-500 hover:shadow-xl border border-slate-200 relative overflow-hidden group flex flex-col justify-between"
-              style={{ backgroundColor: '#ffffff' }}
-            >
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
-                <Users size={200} />
-              </div>
-              <div className="relative z-10">
-                <div className="h-14 w-14 rounded-2xl flex items-center justify-center mb-10 shadow-inner" style={{ backgroundColor: '#f1f5f9' }}>
-                  <Users className="h-7 w-7" style={{ color: '#2F3E4E' }} />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Smart Member Management</h3>
-                <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
-                  Finally, a way to handle residents that actually reflects reality. 
-                  Manage everyone from long-term owners to temporary tenants, with or without the app. 
-                  Our system adapts to your community, not the other way around.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center gap-2 text-sm font-bold uppercase tracking-wider" style={{ color: '#2F3E4E' }}>
-                <span className="h-px w-8 bg-current opacity-30"></span>
-                Intuitive controls
-              </div>
-            </div>
-
-            {/* Feature 2 - Tall / Secondary */}
-            <div 
-              className="md:col-span-2 lg:col-span-2 rounded-3xl p-8 transition-all duration-500 hover:shadow-xl border border-slate-200 flex flex-col bg-slate-900 text-white"
-            >
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center mb-6 bg-white/10">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Flexible Structures</h3>
-              <p className="text-slate-300 leading-relaxed text-sm mb-8">
-                Wings, blocks, villas, or independent floors. Whatever your architectural layout, Vaastio maps it perfectly. No technical workarounds needed.
-              </p>
-              <div className="mt-auto pt-8 border-t border-white/10">
-                <div className="flex -space-x-2">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="h-8 w-8 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-                      {i === 4 ? '+50' : ''}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] mt-2 text-slate-400 font-medium">Trusted by diverse societies</p>
-              </div>
-            </div>
-
-            {/* Feature 3 - Medium / Support */}
-            <div 
-              className="md:col-span-2 lg:col-span-2 rounded-3xl p-8 transition-all duration-500 hover:shadow-xl border border-slate-200 bg-white"
-            >
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center mb-6" style={{ backgroundColor: 'rgba(47, 62, 78, 0.05)' }}>
-                <Shield className="h-6 w-6" style={{ color: '#2F3E4E' }} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Enterprise Security</h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
-                Custom roles and granular permissions. You decide who sees what, with military-grade encryption protecting your society&apos;s data.
-              </p>
-            </div>
-
-            {/* Feature 4 - Wide / Dynamic */}
-            <div 
-              className="md:col-span-2 lg:col-span-4 rounded-3xl p-8 transition-all duration-500 hover:shadow-xl border-dashed border-2 flex items-center gap-8 group cursor-pointer"
-              style={{ borderColor: 'rgba(47, 62, 78, 0.1)', backgroundColor: 'rgba(47, 62, 78, 0.01)' }}
-            >
-              <div className="flex-shrink-0 h-16 w-16 rounded-full bg-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                <AlertCircle className="h-8 w-8" style={{ color: '#2F3E4E' }} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Human-First Complaints</h3>
-                <p className="text-gray-600 text-sm">
-                  Automated tracking with a human touch. Resolve issues faster with smart routing and real-time status updates for residents.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 5 - Grid / Small */}
-            <div 
-              className="md:col-span-2 lg:col-span-3 rounded-3xl p-8 transition-all duration-500 hover:shadow-xl border border-slate-200 bg-slate-50 relative overflow-hidden"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-white shadow-sm">
-                  <MessageSquare className="h-5 w-5" style={{ color: '#2F3E4E' }} />
-                </div>
-                <h3 className="font-bold text-gray-900">Visitor Logs</h3>
-              </div>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Modern digital tracking that replaces messy paper logs. Quick, secure, and respectful of visitor privacy.
-              </p>
-            </div>
-
-            {/* Feature 6 - Grid / Small */}
-            <div 
-              className="md:col-span-2 lg:col-span-3 rounded-3xl p-8 transition-all duration-500 hover:shadow-xl border border-slate-200 bg-white"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-slate-900 text-white">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <h3 className="font-bold text-gray-900">Instant Updates</h3>
-              </div>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Keep everyone in the loop without the noise. Intelligent notifications that matter, delivered exactly where they should be.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* How It Works Section */}
-      <section className="py-24 sm:py-32 lg:py-40" style={{ backgroundColor: '#f0f4f8' }}>
+      {/* Features Section - Core Philosophy */}
+      <section id="features" className="py-24 sm:py-32 lg:py-40 relative">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-5xl sm:text-6xl font-bold mb-6 leading-tight" style={{ color: '#2F3E4E' }}>
-              How It Works
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-widest"
+            >
+              The Vaastio Philosophy
+            </motion.div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-8 tracking-tight" style={{ color: '#0f172a' }}>
+              Built around how societies <br className="hidden lg:block" /> actually work.
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Get started in three simple steps and transform your society management.
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
+              We&apos;ve obsessed over the details so you don&apos;t have to. Vaastio maps to your reality — not the other way around.
             </p>
           </div>
 
-          <div className="space-y-12 lg:space-y-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Philosophy 1 */}
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="glass-card p-10 rounded-[3rem] border border-slate-200 flex flex-col"
+            >
+              <div className="h-14 w-14 rounded-2xl bg-slate-900 flex items-center justify-center mb-8 shadow-lg">
+                <Building2 className="h-7 w-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">Any layout, any size</h3>
+              <p className="text-slate-500 leading-relaxed mb-8">
+                Towers, wings, villas, independent floors, or plotted developments. Vaastio maps your reality perfectly.
+              </p>
+              <div className="mt-auto pt-8 border-t border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Flexibility</p>
+              </div>
+            </motion.div>
+
+            {/* Philosophy 2 */}
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="glass-card p-10 rounded-[3rem] border border-slate-200 flex flex-col bg-slate-900 !text-white"
+            >
+              <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center mb-8 shadow-lg">
+                <Users className="h-7 w-7 text-slate-900" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">Members that reflect real life</h3>
+              <p className="text-slate-500 leading-relaxed mb-8">
+                Owners, tenants, co-residents, or staff. People move in. People move out. Your records stay accurate automatically.
+              </p>
+              <div className="mt-auto pt-8 border-t border-white/10">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dynamic Records</p>
+              </div>
+            </motion.div>
+
+            {/* Philosophy 3 */}
+            <motion.div
+              whileHover={{ y: -10 }}
+              className="glass-card p-10 rounded-[3rem] border border-slate-200 flex flex-col"
+            >
+              <div className="h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
+                <Shield className="h-7 w-7 text-slate-900" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">Roles that make sense</h3>
+              <p className="text-slate-500 leading-relaxed mb-8">
+                Builder, RWAs, Admin, Resident, Gatekeeper. Or create your own. Everyone sees exactly what they should.
+              </p>
+              <div className="mt-auto pt-8 border-t border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Secure Access</p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Journey Section - How It Works */}
+      <section className="py-24 sm:py-32 lg:py-48 bg-slate-50 relative overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-24">
+            <h2 className="text-5xl sm:text-6xl font-black mb-6 tracking-tight text-slate-900">
+              Three steps. That&apos;s it.
+            </h2>
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
+              From builder setup to daily functions, here is how societies get organized.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 relative">
             {/* Step 1 */}
-            <div className="flex gap-8 lg:gap-12 items-start">
-              <div className="flex-shrink-0">
-                <div 
-                  className="flex items-center justify-center h-16 w-16 rounded-full text-white font-bold text-2xl shadow-lg"
-                  style={{ backgroundColor: '#2F3E4E' }}
-                >
-                  1
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="text-[10rem] font-black text-slate-200/50 absolute -top-24 -left-4 leading-none select-none">1</div>
+              <div className="relative z-10">
+                <h3 className="text-3xl font-black text-slate-900 mb-6">Set up your society</h3>
+                <p className="text-lg text-slate-500 leading-relaxed mb-8">
+                  Add your property — towers, wings, and units... any structure you can think of.
+                </p>
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <Building2 size={18} />
+                  <span>Property Mapping</span>
                 </div>
               </div>
-              <div className="flex-1 pt-2">
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">Setup Your Society Profile</h3>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Create your society profile in minutes. Add your property details, configure zones, and set up your organizational structure with our intuitive setup wizard.
-                </p>
-              </div>
-            </div>
+            </motion.div>
 
             {/* Step 2 */}
-            <div className="flex gap-8 lg:gap-12 items-start">
-              <div className="flex-shrink-0">
-                <div 
-                  className="flex items-center justify-center h-16 w-16 rounded-full text-white font-bold text-2xl shadow-lg"
-                  style={{ backgroundColor: '#2F3E4E' }}
-                >
-                  2
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="relative"
+            >
+              <div className="text-[10rem] font-black text-slate-200/50 absolute -top-24 -left-4 leading-none select-none">2</div>
+              <div className="relative z-10">
+                <h3 className="text-3xl font-black text-slate-900 mb-6">Invite your people</h3>
+                <p className="text-lg text-slate-500 leading-relaxed mb-8">
+                  Builders, admins, residents, gatekeepers. Everyone gets exactly the access they need. Nothing more. Nothing less.
+                </p>
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <Users size={18} />
+                  <span>Role-Based Access</span>
                 </div>
               </div>
-              <div className="flex-1 pt-2">
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">Invite Your Team & Residents</h3>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Invite committee members, staff, and residents. Assign roles and permissions based on your requirements. Everyone gets access tailored to their needs.
-                </p>
-              </div>
-            </div>
+            </motion.div>
 
             {/* Step 3 */}
-            <div className="flex gap-8 lg:gap-12 items-start">
-              <div className="flex-shrink-0">
-                <div 
-                  className="flex items-center justify-center h-16 w-16 rounded-full text-white font-bold text-2xl shadow-lg"
-                  style={{ backgroundColor: '#2F3E4E' }}
-                >
-                  3
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="relative"
+            >
+              <div className="text-[10rem] font-black text-slate-200/50 absolute -top-24 -left-4 leading-none select-none">3</div>
+              <div className="relative z-10">
+                <h3 className="text-3xl font-black text-slate-900 mb-6">Run your society</h3>
+                <p className="text-lg text-slate-500 leading-relaxed mb-8">
+                  Complaints, visitors, announcements, members. Everything in one place. Always.
+                </p>
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <Zap size={18} />
+                  <span>Operational Control</span>
                 </div>
               </div>
-              <div className="flex-1 pt-2">
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">Start Managing with Ease</h3>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Begin managing announcements, complaints, visitors, and finances. Enjoy real-time insights and automated workflows that save you hours every week.
-                </p>
-              </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
-
-      {/* Value Proposition */}
-      <section className="py-24 sm:py-32 lg:py-40" style={{ backgroundColor: '#2F3E4E', color: 'white' }}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-5xl sm:text-6xl font-bold mb-8 leading-tight">
-            Built for Builders,
-            <br />
-            Loved by Societies
-          </h2>
-          <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed mb-16 font-light">
-            We understand the complexity of managing residential societies. That&apos;s why Vaastio is built with simplicity in mind — scalable technology without unnecessary complexity.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-16">
-            <div>
-              <p className="text-5xl font-bold mb-4">30 Min</p>
-              <p className="text-lg text-blue-100">Average setup time</p>
-            </div>
-            <div>
-              <p className="text-5xl font-bold mb-4">100%</p>
-              <p className="text-lg text-blue-100">Data security & privacy</p>
-            </div>
-            <div>
-              <p className="text-5xl font-bold mb-4">∞</p>
-              <p className="text-lg text-blue-100">Scalable for any size</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-
 
       {/* Waitlist Section */}
-      <section id="waitlist" className="py-24 sm:py-32 lg:py-40" style={{ backgroundColor: '#f0f4f8' }}>
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-5xl sm:text-6xl font-bold mb-6 leading-tight" style={{ color: '#2F3E4E' }}>
-            Ready to Transform?
-          </h2>
-          <p className="text-xl text-gray-600 mb-12 leading-relaxed">
-            Join thousands of societies already revolutionizing their management. Get early access to Vaastio.
-          </p>
+      <section id="waitlist" className="py-24 sm:py-32 lg:py-48 relative overflow-hidden bg-white">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            className="glass-card p-12 sm:p-20 rounded-[4rem] border border-slate-200 bg-slate-50/50 relative z-10"
+          >
+            <h2 className="text-5xl sm:text-6xl font-black mb-8 tracking-tight text-slate-900">
+              Ready to Transform?
+            </h2>
+            <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed">
+              Built for builders. Trusted by residents. Get early access to the future of society management.
+            </p>
 
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 px-6 py-4 text-base rounded-xl border-2 font-medium transition-all duration-300"
-              style={{ borderColor: '#2F3E4E' }}
-              required
-            />
-            <Button
-              type="submit"
-              className="text-white hover:opacity-85 transition-all duration-300 font-bold px-8 py-4 text-base rounded-xl shadow-lg whitespace-nowrap"
-              style={{ backgroundColor: '#2F3E4E' }}
-            >
-              {subscribed ? '✓ Subscribed!' : 'Join Waitlist'}
-            </Button>
-          </form>
-
-          {subscribed && (
-            <p className="text-lg text-green-600 font-semibold mt-6">Thank you! Check your email for next steps.</p>
-          )}
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-16 px-8 text-lg rounded-2xl border-slate-200 font-bold focus:ring-slate-900"
+                required
+              />
+              <Button
+                type="submit"
+                className="h-16 px-10 text-lg font-black rounded-2xl bg-slate-900 text-white shadow-xl hover:translate-y-[-2px] transition-all"
+              >
+                {subscribed ? '✓ Subscribed!' : 'Join Waitlist'}
+              </Button>
+            </form>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-16" style={{ borderColor: '#e2e8f0' }}>
+      <footer className="border-t py-24 bg-white" style={{ borderColor: '#e2e8f0' }}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-12">
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-12 mb-16">
+            <div className="flex items-center gap-3">
               <Image
                 src="/vaastio-logo.png"
                 alt="Vaastio Logo"
-                width={56}
-                height={56}
+                width={64}
+                height={64}
                 className="object-contain"
-                style={{ width: '56px', height: '56px' }}
+                style={{ width: '64px', height: '64px' }}
+                priority
               />
-              <span className="text-3xl font-bold" style={{ color: '#2F3E4E' }}>Vaastio</span>
+              <span className="text-3xl font-black tracking-tighter text-slate-900">Vaastio</span>
             </div>
-            <div className="flex gap-10 text-sm font-semibold">
-            
+            <div className="text-center md:text-right">
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">
+                Built for builders. Trusted by residents.
+              </p>
             </div>
           </div>
-          <div className="border-t pt-8 text-center text-sm text-gray-500" style={{ borderColor: '#e2e8f0' }}>
-            <p>© 2024 Vaastio. All rights reserved.</p>
+          <div className="border-t pt-12 text-center text-sm text-slate-400" style={{ borderColor: '#f1f5f9' }}>
+            <p className="font-medium tracking-tight">© 2026 Vaastio. All rights reserved.</p>
           </div>
         </div>
       </footer>
