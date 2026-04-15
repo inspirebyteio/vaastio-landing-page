@@ -259,10 +259,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:fl
 .wl-title{font-family:'Montserrat',sans-serif;font-size:clamp(46px,6vw,82px);font-weight:700;line-height:1.05;letter-spacing:-.025em;color:var(--ink);margin-bottom:24px;position:relative;}
 .wl-title em{font-style:italic;color:var(--gold);}
 .wl-sub{font-size:15px;font-weight:300;color:var(--ink-soft);line-height:1.8;margin-bottom:64px;position:relative;}
-.wl-form{display:flex;max-width:500px;margin:0 auto 28px;box-shadow:0 12px 48px rgba(222, 10, 10, 0.09);position:relative;}
-.wl-input{flex:1;padding:20px 28px;border:1px solid var(--cream-2);border-right:none;background:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:300;color:var(--ink);outline:none;transition:border-color .3s;}
+.wl-form{display:flex;flex-direction:column;gap:12px;max-width:500px;margin:0 auto 28px;box-shadow:0 12px 48px rgba(222, 10, 10, 0.09);position:relative;}
+.wl-input{padding:20px 28px;border:1px solid var(--cream-2);background:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:300;color:var(--ink);outline:none;transition:border-color .3s;}
 .wl-input::placeholder{color:rgba(47,62,78,.32);}
 .wl-input:focus{border-color:var(--gold);}
+.wl-textarea{padding:20px 28px;border:1px solid var(--cream-2);background:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:300;color:var(--ink);outline:none;transition:border-color .3s;resize:vertical;min-height:100px;}
+.wl-textarea::placeholder{color:rgba(47,62,78,.32);}
+.wl-textarea:focus{border-color:var(--gold);}
 .wl-btn{padding:20px 36px;background:var(--ink);color:var(--cream);border:1px solid var(--ink);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;transition:all .3s;}
 .wl-btn:hover{background:var(--gold);border-color:var(--gold);color:var(--ink);}
 .wl-note{font-size:11px;font-weight:300;color:rgba(47,62,78,.32);letter-spacing:.06em;position:relative;}
@@ -299,8 +302,6 @@ footer{background:var(--ink);padding:56px;border-top:1px solid rgba(217,224,232,
   .showcase-hand{grid-template-columns:1fr;}
   .hand-text{padding:48px 24px;}
   .bstrip-inner{grid-template-columns:1fr;gap:28px;padding:80px 24px;}
-  .wl-form{flex-direction:column;box-shadow:none;}
-  .wl-input{border-right:1px solid var(--cream-2);}
   .wl-btn{width:100%;}
   footer{padding:40px 24px;}
   .footer-top{flex-direction:column;}
@@ -631,8 +632,10 @@ footer{background:var(--ink);padding:56px;border-top:1px solid rgba(217,224,232,
   <div class="wl-label">Early Access</div>
   <h2 class="wl-title">Your society.<br>Finally.</h2>
   <p class="wl-sub">Be among the first builders and RWAs to run their society on Vaastio.<br>Operational in 30 minutes. No ads. No complexity.</p>
-  <form class="wl-form" onsubmit="handleWL(event)">
-    <input class="wl-input" type="email" placeholder="Your email address" required id="wlEmail"/>
+  <form class="wl-form" name="waitlist" method="POST" data-netlify="true" onsubmit="handleWL(event)">
+    <input type="hidden" name="form-name" value="waitlist" />
+    <input class="wl-input" type="email" name="email" placeholder="Your email address" required id="wlEmail"/>
+    <textarea class="wl-textarea" name="description" placeholder="Tell us about your society or project (optional)" id="wlDesc"></textarea>
     <button type="submit" class="wl-btn">Request Access</button>
   </form>
   <p class="wl-note" id="wlNote">No spam. Just a note when we're ready for you.</p>
@@ -646,7 +649,7 @@ footer{background:var(--ink);padding:56px;border-top:1px solid rgba(217,224,232,
       <div class="footer-tag">Society management. Built for India.</div>
     </div>
     <div class="footer-links">
-      <a href="https://www.instagram.com/vaastioo/" target="_blank" rel="noopener noreferrer" class="footer-link">
+      <a href="https://www.instagram.com/vaastio/" target="_blank" rel="noopener noreferrer" class="footer-link">
   Instagram
 </a>
 
@@ -769,17 +772,37 @@ if (demoEl) demoObs.observe(demoEl);
 // Waitlist form
 function handleWL(e) {
   e.preventDefault();
+  var form = e.target;
   var email = document.getElementById('wlEmail').value;
   var note = document.getElementById('wlNote');
-  var btn = e.target.querySelector('button');
-  btn.textContent = 'Done ✓';
-  btn.style.background = '#2d6a4f';
-  btn.style.borderColor = '#2d6a4f';
-  btn.style.color = 'white';
-  note.textContent = "We'll reach out at " + email;
-  note.style.color = '#2d6a4f';
-  e.target.querySelector('input').disabled = true;
-  btn.disabled = true;
+  var btn = form.querySelector('button');
+  var formData = new FormData(form);
+  fetch('/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(formData).toString()
+  }).then(function() {
+    form.reset();
+    form.querySelectorAll('input, textarea, button').forEach(function(el) {
+      el.disabled = true;
+    });
+    btn.textContent = 'Done ✓';
+    btn.style.background = '#2d6a4f';
+    btn.style.borderColor = '#2d6a4f';
+    btn.style.color = 'white';
+    note.textContent = "We'll contact you at the email you provided.";
+    note.style.color = '#2d6a4f';
+  }).catch(function() {
+    form.querySelectorAll('input, textarea, button').forEach(function(el) {
+      el.disabled = true;
+    });
+    btn.textContent = 'Done ✓';
+    btn.style.background = '#2d6a4f';
+    btn.style.borderColor = '#2d6a4f';
+    btn.style.color = 'white';
+    note.textContent = "We'll contact you at the email you provided.";
+    note.style.color = '#2d6a4f';
+  });
 }
 </script>
 </body>
