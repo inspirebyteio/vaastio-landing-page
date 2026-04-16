@@ -632,13 +632,10 @@ footer{background:var(--ink);padding:56px;border-top:1px solid rgba(217,224,232,
   <div class="wl-label">Early Access</div>
   <h2 class="wl-title">Your society.<br>Finally.</h2>
   <p class="wl-sub">Be among the first builders and RWAs to run their society on Vaastio.<br>Operational in 30 minutes. No ads. No complexity.</p>
-  <form class="wl-form" name="waitlist" method="POST" data-netlify="true" onsubmit="handleWL(event)">
-    <input type="hidden" name="form-name" value="waitlist" />
-    <input class="wl-input" type="email" name="email" placeholder="Your email address" required id="wlEmail"/>
-    <textarea class="wl-textarea" name="description" placeholder="Tell us about your society or project (optional)" id="wlDesc"></textarea>
-    <button type="submit" class="wl-btn">Request Access</button>
-  </form>
-  <p class="wl-note" id="wlNote">No spam. Just a note when we're ready for you.</p>
+  <div class="wl-form" style="display: flex; justify-content: center; box-shadow: none;">
+    <button data-tally-open="vGxeJQ" data-tally-emoji-text="👋" data-tally-emoji-animation="wave" class="wl-btn" style="cursor: pointer; width: 100%;">Request Access</button>
+  </div>
+  <p class="wl-note" id="wlNote">Click above to join our waitlist via Tally.</p>
 </section>
 
 <!-- FOOTER -->
@@ -769,41 +766,8 @@ var demoObs = new IntersectionObserver(function(entries) {
 var demoEl = document.getElementById('demo');
 if (demoEl) demoObs.observe(demoEl);
 
-// Waitlist form
-function handleWL(e) {
-  e.preventDefault();
-  var form = e.target;
-  var email = document.getElementById('wlEmail').value;
-  var note = document.getElementById('wlNote');
-  var btn = form.querySelector('button');
-  var formData = new FormData(form);
-  fetch('/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(formData).toString()
-  }).then(function() {
-    form.reset();
-    form.querySelectorAll('input, textarea, button').forEach(function(el) {
-      el.disabled = true;
-    });
-    btn.textContent = 'Done ✓';
-    btn.style.background = '#2d6a4f';
-    btn.style.borderColor = '#2d6a4f';
-    btn.style.color = 'white';
-    note.textContent = "We'll contact you at the email you provided.";
-    note.style.color = '#2d6a4f';
-  }).catch(function() {
-    form.querySelectorAll('input, textarea, button').forEach(function(el) {
-      el.disabled = true;
-    });
-    btn.textContent = 'Done ✓';
-    btn.style.background = '#2d6a4f';
-    btn.style.borderColor = '#2d6a4f';
-    btn.style.color = 'white';
-    note.textContent = "We'll contact you at the email you provided.";
-    note.style.color = '#2d6a4f';
-  });
-}
+// Waitlist form functionality is now handled entirely by Tally.so embed SDK
 </script>
+<script async src="https://tally.so/widgets/embed.js"></script>
 </body>
 </html>
