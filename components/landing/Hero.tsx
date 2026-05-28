@@ -1,3 +1,5 @@
+import HeroAnimation from '@/components/HeroAnimation'
+
 export default function Hero() {
   return (
     <section className="hero">
@@ -37,13 +39,7 @@ export default function Hero() {
         </div>
       </div>
       <div className="hero-right">
-        <div className="hero-img"></div>
-        <div className="hero-arch"></div>
-        <div className="hero-arch-2"></div>
-        <div className="hero-caption">
-          <div className="hero-caption-n">30</div>
-          <div className="hero-caption-l">Minutes to go live</div>
-        </div>
+        <HeroAnimation />
       </div>
     </section>
   )

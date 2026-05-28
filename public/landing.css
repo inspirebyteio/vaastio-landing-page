@@ -58,10 +58,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:fl
 .hero-role:hover{color:var(--gold);background:rgba(217,224,232,.03);}
 .hero-role:hover strong{color:var(--gold);}
 .hero-right{position:relative;overflow:hidden;}
-.hero-img{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80');background-size:cover;background-position:center 30%;filter: brightness(.85) contrast(1.5);transform:scale(1.06);animation:zoomOut 10s ease-out forwards;}
-@keyframes zoomOut{from{transform:scale(1.06);}to{transform:scale(1.0);}}
-.hero-right::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(to right, var(--dark-bg) 0%, rgba(47,62,78,0.85) 30%, rgba(47,62,78,0.2) 60%, transparent 100%);}
-.hero-right::after{content:'';position:absolute;top:0;bottom:0;left:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(217,224,232,.25) 30%,rgba(217,224,232,.25) 70%,transparent);z-index:2;}
+.hero-img{display:none;}
 .hero-arch{position:absolute;bottom:-60px;right:60px;width:240px;height:240px;border:1px solid rgba(217,224,232,.12);border-radius:50% 50% 0 0;z-index:2;}
 .hero-arch-2{position:absolute;bottom:-60px;right:30px;width:300px;height:300px;border:1px solid rgba(217,224,232,.06);border-radius:50% 50% 0 0;z-index:2;}
 .hero-caption{position:absolute;bottom:120px;right:44px;z-index:3;text-align:right;opacity:0;animation:fadeUp .8s 1.3s forwards;}
@@ -261,12 +258,21 @@ footer{background:var(--ink);padding:56px;border-top:1px solid rgba(217,224,232,
 .fsep{width:1px;height:16px;background:rgba(217,224,232,.13);}
 .footer-bottom{padding-top:28px;border-top:1px solid rgba(217,224,232,.05);font-size:10px;font-weight:300;color:hsla(220, 18%, 97%,.16);letter-spacing:.08em;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;}
 .reveal,.reveal-l,.reveal-r{opacity:1;transform:none;}
+@keyframes heroCardIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes heroCardOut{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(8px);}}
+@keyframes heroFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+@keyframes heroGlowPulse{0%,100%{opacity:.10;}50%{opacity:.22;}}
+@keyframes heroRipple{from{opacity:.7;transform:scale(1);}to{opacity:0;transform:scale(1.8);}}
+@keyframes heroShimmer{0%{left:-60%;}100%{left:110%;}}
+@keyframes heroProgressFill{from{width:0%;}to{width:100%;}}
+.hero-card-hold{animation:heroFloat 4s ease-in-out infinite;}
+.hero-progress-fill{animation:heroProgressFill 2.5s linear forwards;}
+@media(max-width:900px){.hero-anim-scale{transform:scale(.75);transform-origin:center center;}}
 @media(max-width:900px){
   nav{padding:20px 24px;}
   .nav-right .nav-link{display:none;}
   .hero{grid-template-columns:1fr;}
   .hero-right{height:60vw;order:-1;}
-  .hero-right::before{background:linear-gradient(to bottom, var(--dark-bg) 0%, rgba(47,62,78,0.8) 30%, transparent 100%);}
   .hero-left{padding:40px 24px 110px;}
   .hero-roles{grid-template-columns:repeat(2,1fr);position:relative;}
   .how,.features,.waitlist,.demo-section{padding:80px 24px;}
