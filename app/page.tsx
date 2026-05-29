@@ -3,7 +3,6 @@ import Navbar from '@/components/landing/Navbar'
 import Hero from '@/components/landing/Hero'
 import Marquee from '@/components/landing/Marquee'
 import HowItWorks from '@/components/landing/HowItWorks'
-import Features from '@/components/landing/Features'
 import CsStrip from '@/components/landing/CsStrip'
 import DemoSection from '@/components/landing/DemoSection'
 import Showcase from '@/components/landing/Showcase'
@@ -22,7 +21,6 @@ export default function Home() {
       <Hero />
       <Marquee />
       <HowItWorks />
-      <Features />
       <CsStrip items={csStrip1} />
       <DemoSection />
       <Showcase />

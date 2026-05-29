@@ -4,10 +4,6 @@ export default function HowItWorks() {
       <div className="sec-label">How it works</div>
       <div className="how-head">
         <h2 className="how-title">Three steps.<br />That&apos;s it.</h2>
-        <p className="how-sub">
-          From builder handover to daily operations — Vaastio is operational in 30 minutes.
-          No lengthy onboarding. No technical team required.
-        </p>
       </div>
       <div className="steps">
         <div className="step reveal light-section">

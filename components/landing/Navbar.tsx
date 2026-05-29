@@ -1,8 +1,18 @@
+'use client'
 import Image from "next/image"
+import { useState, useEffect } from 'react'
 
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
-    <nav>
+    <nav className={scrolled ? 'nav-scrolled' : ''}>
       <a href="#" className="nav-logo" style={{ display: "flex", alignItems: "center", gap: 0 }}>
         <Image src="/logo-white.png" alt="Vaastio" width={100} height={100} priority style={{ objectFit: "contain", margin: "-18px" }} />
         Vaastio
