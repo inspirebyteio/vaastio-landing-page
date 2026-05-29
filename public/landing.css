@@ -28,7 +28,8 @@ html{}
 body{font-family:'Montserrat',sans-serif;background:var(--dark-bg);color:var(--cream);overflow-x:hidden;}
 #cur{position:fixed;width:6px;height:6px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .08s;}
 #cur-r{position:fixed;width:28px;height:28px;border:1px solid rgba(217,224,232,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .14s ease;}
-nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,var(--grad-overlay) 0%,transparent 100%);}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,var(--grad-overlay) 0%,transparent 100%);transition:background .35s ease,padding .35s ease;}
+nav.nav-scrolled{padding:16px 56px;background:rgba(47,62,78,0.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
 .nav-logo{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cream);text-decoration:none;}
 .nav-right{display:flex;gap:36px;align-items:center;}
 .nav-link{font-size:11px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:hsla(220, 18%, 97%,.45);text-decoration:none;transition:color .3s;}
@@ -36,7 +37,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:fl
 .nav-cta{font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-line);padding:10px 24px;text-decoration:none;transition:all .3s;}
 .nav-cta:hover{background:var(--gold);color:var(--ink);}
 .hero{position:relative;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
-.hero-left{position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:160px 64px 100px 56px;z-index:2;background:var(--dark-bg);}
+.hero-left{position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:70px 64px 100px 56px;z-index:2;background:var(--dark-bg);}
 .hero-left::after{content:'';position:absolute;top:-100px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(217,224,232,.06) 0%,transparent 65%);z-index:0;}
 .hero-inner{position:relative;z-index:1;}
 .hero-tag{display:inline-flex;align-items:center;gap:12px;font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:40px;}
@@ -44,7 +45,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:fl
 .hero-h1{font-family:'Montserrat',sans-serif;font-size:clamp(50px,5.2vw,78px);font-weight:700;line-height:1.06;letter-spacing:-.02em;color:var(--cream);margin-bottom:32px;}
 .hero-h1 em{font-style:italic;color:var(--gold);display:block;}
 .hero-desc{font-size:15px;font-weight:300;line-height:1.85;color:hsla(220, 18%, 97%,.5);max-width:380px;margin-bottom:56px;}
-.hero-actions{display:flex;align-items:center;gap:32px;}
+.hero-actions{display:flex;flex-direction:column;align-items:flex-start;gap:20px;}
 .btn-gold{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--ink);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:18px 40px;text-decoration:none;transition:all .35s;position:relative;overflow:hidden;}
 .btn-gold::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
 .btn-gold:hover::after{transform:translateX(0);}
@@ -257,6 +258,7 @@ footer{background:var(--ink);padding:56px;border-top:1px solid rgba(217,224,232,
 @media(max-width:900px){.hero-anim-scale{transform:scale(.75);transform-origin:center center;}}
 @media(max-width:900px){
   nav{padding:20px 24px;}
+  nav.nav-scrolled{padding:12px 24px;}
   .nav-right .nav-link{display:none;}
   .hero{grid-template-columns:1fr;}
   .hero-right{height:60vw;order:-1;}
