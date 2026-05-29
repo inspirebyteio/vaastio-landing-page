@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 /* ─────────────────────────────────────────────
    MOMENTS  — 5 real Vaastio features only
@@ -328,7 +328,6 @@ const CARDS = [Complaint, Announcement, Visitor, SocietySetup, UnitAllotment]
 
 /* ──────────────────────────────────────────────────
    APP CHROME — dark app background inside the phone
-   List items change per slide to match the feature
 ────────────────────────────────────────────────── */
 const CHROME_ITEMS = [
   /* 0 — Complaints */
@@ -374,7 +373,6 @@ function AppChrome({ momentIdx }: { momentIdx: number }) {
   const header = MOMENTS[momentIdx].headerLabel
   const items  = CHROME_ITEMS[momentIdx]
 
-  /* tab bar active states */
   const tabActive = [1, 1, 2, 3, 3]
   const tabs = [
     { label: 'Home',     icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
@@ -397,11 +395,9 @@ function AppChrome({ momentIdx }: { momentIdx: number }) {
       }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.88)', letterSpacing: '-0.02em' }}>{header}</span>
         <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
-          {/* search icon stub */}
           <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
           </div>
-          {/* avatar */}
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#818cf8)', border: '1px solid rgba(255,255,255,0.15)' }} />
         </div>
       </div>
@@ -419,14 +415,11 @@ function AppChrome({ momentIdx }: { momentIdx: number }) {
           display: 'flex', alignItems: 'center', padding: '0 10px', gap: 9,
           zIndex: 1,
         }}>
-          {/* colored dot */}
           <div style={{ width: 7, height: 7, borderRadius: '50%', background: item.dot, flexShrink: 0, opacity: 0.85 }} />
-          {/* text */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.32)', marginTop: 2 }}>{item.sub}</div>
           </div>
-          {/* pill */}
           {(() => {
             const pv = item.pv as PV
             const pmap: Record<PV,{bg:string;color:string}> = {
@@ -496,7 +489,8 @@ export default function HeroAnimation() {
   const [slotB, setSlotB] = useState<Slot>({ idx: 0, flipped: false, visible: false })
   const [activeSlot, setActiveSlot] = useState<'a' | 'b'>('a')
   const [momentIdx, setMomentIdx] = useState(0)
-  const [labelVisible, setLabelVisible] = useState(true)
+
+  const jumpFnRef = useRef<((idx: number) => void) | null>(null)
 
   /* real clock */
   useEffect(() => {
@@ -525,7 +519,6 @@ export default function HeroAnimation() {
       const incoming: 'a'|'b' = active === 'a' ? 'b' : 'a'
       const outgoing            = active
       setMomentIdx(current)
-      setLabelVisible(false)
       up(incoming, { idx: current, flipped: false, visible: false })
       timers.push(setTimeout(() => {
         if (!alive) return
@@ -533,7 +526,6 @@ export default function HeroAnimation() {
         up(incoming, { visible: true })
         setActiveSlot(incoming)
         active = incoming
-        setLabelVisible(true)
       }, FADE_MS))
       timers.push(setTimeout(() => { if (alive) up(incoming, { flipped: true }) }, FLIP_AT))
       timers.push(setTimeout(() => {
@@ -543,12 +535,20 @@ export default function HeroAnimation() {
       }, DURATION))
     }
 
+    jumpFnRef.current = (targetIdx: number) => {
+      if (!alive) return
+      timers.forEach(clearTimeout)
+      timers.length = 0
+      current = targetIdx
+      run()
+    }
+
     upA({ idx: 0, flipped: false, visible: false })
-    timers.push(setTimeout(() => { if (alive) { upA({ visible: true }); setLabelVisible(true) } }, 120))
+    timers.push(setTimeout(() => { if (alive) { upA({ visible: true }); setMomentIdx(0) } }, 120))
     timers.push(setTimeout(() => { if (alive)  upA({ flipped: true }) }, FLIP_AT))
     timers.push(setTimeout(() => { if (alive) { current = 1; run() } }, DURATION))
 
-    return () => { alive = false; timers.forEach(clearTimeout) }
+    return () => { alive = false; timers.forEach(clearTimeout); jumpFnRef.current = null }
   }, [])
 
   const renderSlot = (slot: Slot, id: 'a' | 'b') => {
@@ -571,8 +571,6 @@ export default function HeroAnimation() {
     )
   }
 
-  const moment = MOMENTS[momentIdx]
-
   return (
     <>
       <style>{`
@@ -581,116 +579,133 @@ export default function HeroAnimation() {
         @keyframes heroFadeIn    { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:translateY(0)} }
         @keyframes heroFloat     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
         @keyframes heroProgressFill { from{width:0%} to{width:100%} }
-        @keyframes heroLabelIn   { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+        @media (max-width: 900px) { .hero-feature-list { display: none !important; } }
       `}</style>
 
       <div style={{
         position: 'relative', width: '100%', height: '100%',
-        display: 'flex', flexDirection: 'column',
+        display: 'flex', flexDirection: 'row',
         alignItems: 'center', justifyContent: 'center',
-        minHeight: 560,
+        gap: 28, minHeight: 560,
       }}>
 
-        {/* Slide label */}
-        <div style={{
-          marginBottom: 24, textAlign: 'center', minHeight: 50,
-          opacity: labelVisible ? 1 : 0,
-          animation: labelVisible ? 'heroLabelIn 0.38s ease forwards' : 'none',
-          transition: 'opacity 0.28s ease',
+        {/* Feature list */}
+        <div className="hero-feature-list" style={{
+          display: 'flex', flexDirection: 'column', gap: 2,
+          width: 130, flexShrink: 0,
         }}>
-          <div style={{ fontSize: 15.5, fontWeight: 700, letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.88)', lineHeight: 1.25 }}>
-            {moment.label}
-          </div>
-          <div style={{ fontSize: 12, fontWeight: 400, marginTop: 5, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.01em' }}>
-            {moment.sublabel}
-          </div>
+          {MOMENTS.map((m, i) => (
+            <div
+              key={i}
+              onClick={() => { if (momentIdx !== i) jumpFnRef.current?.(i) }}
+              style={{
+                padding: '9px 0 9px 12px',
+                borderLeft: `2px solid ${momentIdx === i ? '#6366f1' : 'transparent'}`,
+                opacity: momentIdx === i ? 1 : 0.28,
+                transition: 'opacity 0.45s ease, border-color 0.45s ease',
+                cursor: momentIdx === i ? 'default' : 'pointer',
+              }}
+            >
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,0.88)', lineHeight: 1.3 }}>
+                {m.label}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.38)', marginTop: 3, lineHeight: 1.4 }}>
+                {m.sublabel}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Soft glow */}
-        <div style={{
-          position: 'absolute', width: 260, height: 360,
-          background: 'radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.07) 0%, transparent 70%)',
-          borderRadius: '50%', filter: 'blur(18px)', pointerEvents: 'none',
-          top: '50%', left: '50%', transform: 'translate(-50%,-40%)', zIndex: 0,
-        }} />
+        {/* Phone + progress */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
 
-        {/* Phone 3D wrapper */}
-        <div style={{ perspective: '1100px', perspectiveOrigin: '48% 42%', position: 'relative', zIndex: 1 }}>
-          <div style={{ transform: 'rotateY(-8deg) rotateX(5deg)', transformStyle: 'preserve-3d', position: 'relative' }}>
+          {/* Soft glow */}
+          <div style={{
+            position: 'absolute', width: 260, height: 360,
+            background: 'radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.07) 0%, transparent 70%)',
+            borderRadius: '50%', filter: 'blur(18px)', pointerEvents: 'none',
+            top: '50%', left: '50%', transform: 'translate(-50%,-40%)', zIndex: 0,
+          }} />
 
-            {/* Volume buttons */}
-            {[[22,36],[31,52]].map(([t,h],i) => (
-              <div key={i} style={{ position:'absolute', left:-3, top:`${t}%`, width:3, height:h, background:'linear-gradient(to left,#1c2035,#252a42)', borderRadius:'2px 0 0 2px', boxShadow:'-2px 0 6px rgba(0,0,0,0.6)' }} />
-            ))}
-            {/* Power */}
-            <div style={{ position:'absolute', right:-3, top:'28%', width:3, height:58, background:'linear-gradient(to right,#1c2035,#252a42)', borderRadius:'0 2px 2px 0', boxShadow:'2px 0 6px rgba(0,0,0,0.6)' }} />
+          {/* Phone 3D wrapper */}
+          <div style={{ perspective: '1100px', perspectiveOrigin: '48% 42%', position: 'relative', zIndex: 1 }}>
+            <div style={{ transform: 'rotateY(-8deg) rotateX(5deg)', transformStyle: 'preserve-3d', position: 'relative' }}>
 
-            {/* Phone body */}
-            <div style={{
-              width:252, height:514, borderRadius:46,
-              background:'linear-gradient(145deg,#252a3e 0%,#181c2c 25%,#0e1018 55%,#181c2c 80%,#252a3e 100%)',
-              boxShadow:'0 0 0 1px rgba(255,255,255,0.09),0 0 0 2.5px rgba(0,0,0,0.95),-10px 24px 70px rgba(0,0,0,0.75),-4px 8px 24px rgba(0,0,0,0.55)',
-              position:'relative', overflow:'hidden',
-            }}>
-              <div style={{ position:'absolute', top:0, left:'18%', right:'18%', height:1.5, background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.26),transparent)', zIndex:60 }} />
+              {/* Volume buttons */}
+              {[[22,36],[31,52]].map(([t,h],i) => (
+                <div key={i} style={{ position:'absolute', left:-3, top:`${t}%`, width:3, height:h, background:'linear-gradient(to left,#1c2035,#252a42)', borderRadius:'2px 0 0 2px', boxShadow:'-2px 0 6px rgba(0,0,0,0.6)' }} />
+              ))}
+              {/* Power */}
+              <div style={{ position:'absolute', right:-3, top:'28%', width:3, height:58, background:'linear-gradient(to right,#1c2035,#252a42)', borderRadius:'0 2px 2px 0', boxShadow:'2px 0 6px rgba(0,0,0,0.6)' }} />
 
-              {/* Screen */}
-              <div style={{ position:'absolute', inset:'7px 6px', borderRadius:40, background:'#060a18', overflow:'hidden' }}>
+              {/* Phone body */}
+              <div style={{
+                width:252, height:514, borderRadius:46,
+                background:'linear-gradient(145deg,#252a3e 0%,#181c2c 25%,#0e1018 55%,#181c2c 80%,#252a3e 100%)',
+                boxShadow:'0 0 0 1px rgba(255,255,255,0.09),0 0 0 2.5px rgba(0,0,0,0.95),-10px 24px 70px rgba(0,0,0,0.75),-4px 8px 24px rgba(0,0,0,0.55)',
+                position:'relative', overflow:'hidden',
+              }}>
+                <div style={{ position:'absolute', top:0, left:'18%', right:'18%', height:1.5, background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.26),transparent)', zIndex:60 }} />
 
-                <AppChrome momentIdx={momentIdx} />
+                {/* Screen */}
+                <div style={{ position:'absolute', inset:'7px 6px', borderRadius:40, background:'#060a18', overflow:'hidden' }}>
 
-                {/* Scan lines */}
-                <div style={{ position:'absolute', inset:0, zIndex:3, pointerEvents:'none', backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.004) 2px,rgba(255,255,255,0.004) 3px)' }} />
-                {/* Glare */}
-                <div style={{ position:'absolute', inset:0, zIndex:50, pointerEvents:'none', borderRadius:40, background:'linear-gradient(128deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.018) 22%,transparent 44%)' }} />
+                  <AppChrome momentIdx={momentIdx} />
 
-                {/* Dynamic island */}
-                <div style={{ position:'absolute', top:10, left:'50%', transform:'translateX(-50%)', width:90, height:24, background:'#000', borderRadius:12, zIndex:40, boxShadow:'0 0 0 1px rgba(255,255,255,0.07)' }} />
+                  {/* Scan lines */}
+                  <div style={{ position:'absolute', inset:0, zIndex:3, pointerEvents:'none', backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.004) 2px,rgba(255,255,255,0.004) 3px)' }} />
+                  {/* Glare */}
+                  <div style={{ position:'absolute', inset:0, zIndex:50, pointerEvents:'none', borderRadius:40, background:'linear-gradient(128deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.018) 22%,transparent 44%)' }} />
 
-                {/* Status bar */}
-                <div style={{ position:'absolute', top:0, left:0, right:0, height:44, padding:'0 16px', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:45 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.88)' }}>{time}</span>
-                  <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                    <div style={{ display:'flex', alignItems:'flex-end', gap:1.5 }}>
-                      {[3,5,7,9].map((h,i)=><div key={i} style={{ width:3, height:h, borderRadius:1, background:i<3?'rgba(255,255,255,0.8)':'rgba(255,255,255,0.2)' }}/>)}
-                    </div>
-                    <svg width="13" height="10" viewBox="0 0 22 16" fill="none">
-                      <path d="M11 12l1.4-1.4" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round"/>
-                      <path d="M7 8.5c2.2-2.2 5.8-2.2 8 0" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M3.2 4.8C6.4 1.6 14.6 1.6 17.8 4.8" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round"/>
-                      <circle cx="11" cy="14" r="1.5" fill="rgba(255,255,255,0.8)"/>
-                    </svg>
-                    <div style={{ display:'flex', alignItems:'center', gap:1 }}>
-                      <div style={{ width:22, height:12, border:'1.5px solid rgba(255,255,255,0.55)', borderRadius:3.5, padding:'2px 2px' }}>
-                        <div style={{ width:'68%', height:'100%', background:'rgba(255,255,255,0.75)', borderRadius:1.5 }}/>
+                  {/* Dynamic island */}
+                  <div style={{ position:'absolute', top:10, left:'50%', transform:'translateX(-50%)', width:90, height:24, background:'#000', borderRadius:12, zIndex:40, boxShadow:'0 0 0 1px rgba(255,255,255,0.07)' }} />
+
+                  {/* Status bar */}
+                  <div style={{ position:'absolute', top:0, left:0, right:0, height:44, padding:'0 16px', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:45 }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.88)' }}>{time}</span>
+                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                      <div style={{ display:'flex', alignItems:'flex-end', gap:1.5 }}>
+                        {[3,5,7,9].map((h,i)=><div key={i} style={{ width:3, height:h, borderRadius:1, background:i<3?'rgba(255,255,255,0.8)':'rgba(255,255,255,0.2)' }}/>)}
                       </div>
-                      <div style={{ width:2, height:6, background:'rgba(255,255,255,0.4)', borderRadius:'0 1px 1px 0' }}/>
+                      <svg width="13" height="10" viewBox="0 0 22 16" fill="none">
+                        <path d="M11 12l1.4-1.4" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round"/>
+                        <path d="M7 8.5c2.2-2.2 5.8-2.2 8 0" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M3.2 4.8C6.4 1.6 14.6 1.6 17.8 4.8" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round"/>
+                        <circle cx="11" cy="14" r="1.5" fill="rgba(255,255,255,0.8)"/>
+                      </svg>
+                      <div style={{ display:'flex', alignItems:'center', gap:1 }}>
+                        <div style={{ width:22, height:12, border:'1.5px solid rgba(255,255,255,0.55)', borderRadius:3.5, padding:'2px 2px' }}>
+                          <div style={{ width:'68%', height:'100%', background:'rgba(255,255,255,0.75)', borderRadius:1.5 }}/>
+                        </div>
+                        <div style={{ width:2, height:6, background:'rgba(255,255,255,0.4)', borderRadius:'0 1px 1px 0' }}/>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Floating cards */}
+                  {renderSlot(slotA,'a')}
+                  {renderSlot(slotB,'b')}
+
+                  {/* Home indicator */}
+                  <div style={{ position:'absolute', bottom:7, left:'50%', transform:'translateX(-50%)', width:68, height:4, background:'rgba(255,255,255,0.26)', borderRadius:2, zIndex:60 }}/>
                 </div>
-
-                {/* Floating cards */}
-                {renderSlot(slotA,'a')}
-                {renderSlot(slotB,'b')}
-
-                {/* Home indicator */}
-                <div style={{ position:'absolute', bottom:7, left:'50%', transform:'translateX(-50%)', width:68, height:4, background:'rgba(255,255,255,0.26)', borderRadius:2, zIndex:60 }}/>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Ground shadow */}
-        <div style={{ width:160, height:14, background:'radial-gradient(ellipse,rgba(0,0,0,0.48) 0%,transparent 70%)', marginTop:8, filter:'blur(4px)' }}/>
+          {/* Ground shadow */}
+          <div style={{ width:160, height:14, background:'radial-gradient(ellipse,rgba(0,0,0,0.48) 0%,transparent 70%)', marginTop:8, filter:'blur(4px)' }}/>
 
-        {/* Progress bar */}
-        <div style={{ display:'flex', gap:5, marginTop:14, width:200 }}>
-          {[0,1,2,3,4].map(i=>(
-            <div key={i} style={{ flex:1, height:2, borderRadius:2, background:'rgba(255,255,255,0.1)', overflow:'hidden' }}>
-              {i < momentIdx && <div style={{ width:'100%', height:'100%', background:'rgba(255,255,255,0.4)', borderRadius:2 }}/>}
-              {i === momentIdx && <div key={`p${momentIdx}`} style={{ height:'100%', background:'rgba(255,255,255,0.4)', borderRadius:2, animation:`heroProgressFill ${DURATION}ms linear forwards` }}/>}
-            </div>
-          ))}
+          {/* Progress bar */}
+          <div style={{ display:'flex', gap:5, marginTop:14, width:200 }}>
+            {[0,1,2,3,4].map(i=>(
+              <div key={i} style={{ flex:1, height:2, borderRadius:2, background:'rgba(255,255,255,0.1)', overflow:'hidden' }}>
+                {i < momentIdx && <div style={{ width:'100%', height:'100%', background:'rgba(255,255,255,0.4)', borderRadius:2 }}/>}
+                {i === momentIdx && <div key={`p${momentIdx}`} style={{ height:'100%', background:'rgba(255,255,255,0.4)', borderRadius:2, animation:`heroProgressFill ${DURATION}ms linear forwards` }}/>}
+              </div>
+            ))}
+          </div>
+
         </div>
 
       </div>
