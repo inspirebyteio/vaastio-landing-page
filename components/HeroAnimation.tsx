@@ -1,438 +1,714 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+/* ─────────────────────────────────────────────
+   MOMENTS  — 5 real Vaastio features only
+   1. Complaint → Resolution
+   2. Announcement → Broadcasting
+   3. Visitor → Allow / Deny
+   4. Society Structure creation
+   5. Unit Allotment → Resident onboarded
+───────────────────────────────────────────── */
+const MOMENTS = [
+  { label: 'Issue reported.', sublabel: 'Admin resolves it.', headerLabel: 'Complaints' },
+  { label: 'Admin sends.', sublabel: 'Everyone receives.', headerLabel: 'Announcements' },
+  { label: 'Visitor at gate.', sublabel: 'Resident decides.', headerLabel: 'Visitors' },
+  { label: 'Structure defined.', sublabel: 'Society goes live.', headerLabel: 'Society Setup' },
+  { label: 'Unit assigned.', sublabel: 'Resident onboarded.', headerLabel: 'Units' },
+]
+
+const DURATION = 3400
+const FLIP_AT  = 1400
+const FADE_MS  = 360
 
 interface CP { flipped: boolean }
 
+/* ── design tokens ── */
+const T = {
+  white:       '#ffffff',
+  surface:     '#f8fafc',
+  border:      '#e8edf2',
+  borderMid:   '#d1d9e0',
+  text:        '#0f172a',
+  textMid:     '#475569',
+  textMuted:   '#94a3b8',
+  indigo:      '#6366f1',
+  indigoBg:    '#eef2ff',
+  indigoText:  '#4338ca',
+  green:       '#16a34a',
+  greenBg:     '#f0fdf4',
+  greenBorder: '#bbf7d0',
+  greenText:   '#15803d',
+  red:         '#dc2626',
+  redBg:       '#fef2f2',
+  redBorder:   '#fecaca',
+  redText:     '#b91c1c',
+  amber:       '#d97706',
+  amberBg:     '#fffbeb',
+  amberBorder: '#fde68a',
+  amberText:   '#92400e',
+  slate:       '#64748b',
+  slateBg:     '#f1f5f9',
+  slateBorder: '#e2e8f0',
+  slateText:   '#475569',
+}
+
+/* ── Shared pill ── */
+type PillVariant = 'green' | 'red' | 'amber' | 'indigo' | 'slate'
+function Pill({ v, children }: { v: PillVariant, children: React.ReactNode }) {
+  const map: Record<PillVariant, { bg: string; color: string; border: string }> = {
+    green:  { bg: T.greenBg,  color: T.greenText,  border: T.greenBorder },
+    red:    { bg: T.redBg,    color: T.redText,    border: T.redBorder   },
+    amber:  { bg: T.amberBg,  color: T.amberText,  border: T.amberBorder },
+    indigo: { bg: T.indigoBg, color: T.indigoText, border: '#c7d2fe'     },
+    slate:  { bg: T.slateBg,  color: T.slateText,  border: T.slateBorder },
+  }
+  const s = map[v]
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20,
+      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
+      letterSpacing: '0.02em', whiteSpace: 'nowrap',
+    }}>{children}</span>
+  )
+}
+
+/* ── Icon container ── */
+function IconBox({ color, children }: { color: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+      background: T.surface, border: `1px solid ${T.border}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color,
+    }}>{children}</div>
+  )
+}
+
+/* ── Divider ── */
+const Div = () => <div style={{ height: 1, background: T.border, margin: '11px 0' }} />
+
+/* ── Card shell ── */
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      background: T.white, borderRadius: 16,
+      padding: '14px 15px',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.18)',
+      border: `1px solid ${T.border}`,
+      minWidth: 202, maxWidth: 224,
+    }}>{children}</div>
+  )
+}
+
+/* ────────────────────────────────
+   CARD 1 — Complaint → Resolution
+──────────────────────────────── */
 function Complaint({ flipped }: CP) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{
-        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-        background: flipped ? '#22c55e' : '#ef4444',
-        boxShadow: flipped ? '0 0 7px #22c55e99' : '0 0 7px #ef444499',
-        transition: 'all 0.4s ease',
-      }} />
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', lineHeight: 1.3 }}>
-          {flipped ? 'Resolved by Admin' : 'Water leakage reported'}
+    <Shell>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <IconBox color={flipped ? T.green : T.red}>
+          {flipped
+            ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+            : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+          }
+        </IconBox>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.text }}>
+              {flipped ? 'Resolved' : 'Water leakage'}
+            </span>
+            <Pill v={flipped ? 'green' : 'red'}>{flipped ? 'Done' : 'Open'}</Pill>
+          </div>
+          <div style={{ fontSize: 10.5, color: T.textMuted, marginTop: 3 }}>Block B · Flat 204</div>
         </div>
-        <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Block B · Flat 204</div>
       </div>
-    </div>
+      {flipped && (
+        <>
+          <Div />
+          <div style={{ fontSize: 10.5, color: T.textMid, animation: 'heroFadeIn 0.4s ease' }}>
+            <span style={{ color: T.green, fontWeight: 600 }}>Admin</span> marked resolved · plumber visit scheduled
+          </div>
+        </>
+      )}
+    </Shell>
   )
 }
 
+/* ────────────────────────────────────────
+   CARD 2 — Announcement → Broadcasting
+──────────────────────────────────────── */
 function Announcement({ flipped }: CP) {
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
-      {flipped && (
-        <span style={{
-          position: 'absolute', inset: -14, borderRadius: 18,
-          border: '1.5px solid rgba(99,102,241,0.5)',
-          animation: 'heroRipple 1s ease-out forwards',
-          pointerEvents: 'none',
-        }} />
-      )}
-      <span style={{
-        width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-        background: 'rgba(99,102,241,0.12)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-      </span>
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>Water supply off 10am–2pm</div>
-        <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Pushed to all residents</div>
+    <Shell>
+      <div style={{ position: 'relative' }}>
+        {flipped && (
+          <>
+            <span style={{ position:'absolute', inset:-16, borderRadius:18, border:`1px solid rgba(99,102,241,0.2)`, animation:'heroRipple 1s ease-out forwards', pointerEvents:'none' }} />
+            <span style={{ position:'absolute', inset:-28, borderRadius:22, border:`1px solid rgba(99,102,241,0.1)`, animation:'heroRipple 1s 0.22s ease-out forwards', pointerEvents:'none' }} />
+          </>
+        )}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <IconBox color={T.indigo}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </IconBox>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: T.text }}>Water supply off</span>
+              <Pill v={flipped ? 'green' : 'slate'}>{flipped ? 'Sent' : 'Draft'}</Pill>
+            </div>
+            <div style={{ fontSize: 10.5, color: T.textMuted, marginTop: 3 }}>10:00 am – 2:00 pm today</div>
+          </div>
+        </div>
       </div>
-    </div>
+      <Div />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 10.5, color: flipped ? T.green : T.textMuted, fontWeight: flipped ? 600 : 400, transition: 'color 0.4s' }}>
+          {flipped ? '84 residents notified' : 'All residents · Society-wide'}
+        </span>
+        <div style={{ display: 'flex' }}>
+          {['#c7d2fe','#a5b4fc','#818cf8'].map((c, i) => (
+            <div key={i} style={{
+              width: 17, height: 17, borderRadius: '50%',
+              background: c, border: `2px solid ${T.white}`,
+              marginLeft: i > 0 ? -6 : 0,
+              opacity: flipped ? 1 : 0.45, transition: 'opacity 0.5s',
+            }} />
+          ))}
+        </div>
+      </div>
+    </Shell>
   )
 }
 
+/* ────────────────────────────────
+   CARD 3 — Visitor Allow / Deny
+──────────────────────────────── */
 function Visitor({ flipped }: CP) {
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <span style={{
-          width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-          background: 'rgba(234,179,8,0.1)',
+    <Shell>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+          background: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" strokeWidth="2" strokeLinecap="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-          </svg>
-        </span>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>Rahul Sharma</div>
-          <div style={{ fontSize: 10, color: '#94a3b8' }}>Visitor · Main Gate</div>
+          fontSize: 11, fontWeight: 700, color: T.indigoText, letterSpacing: '0.04em',
+        }}>RS</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.text }}>Rahul Sharma</span>
+            {flipped && <Pill v="green">Allowed</Pill>}
+          </div>
+          <div style={{ fontSize: 10.5, color: T.textMuted, marginTop: 3 }}>Main Gate · just now</div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <span style={{
-          flex: 1, textAlign: 'center', fontSize: 10, fontWeight: 700, padding: '5px 0', borderRadius: 6,
-          background: flipped ? '#dcfce7' : 'rgba(34,197,94,0.08)', color: '#16a34a',
-          border: `1.5px solid ${flipped ? '#86efac' : 'rgba(34,197,94,0.3)'}`,
-          boxShadow: flipped ? '0 0 8px rgba(34,197,94,0.3)' : 'none',
-          transition: 'all 0.35s ease',
-        }}>Allow</span>
-        <span style={{
-          flex: 1, textAlign: 'center', fontSize: 10, fontWeight: 700, padding: '5px 0', borderRadius: 6,
-          background: 'rgba(239,68,68,0.06)',
-          color: flipped ? 'rgba(239,68,68,0.25)' : '#ef4444',
-          border: `1.5px solid ${flipped ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.3)'}`,
-          transition: 'all 0.35s ease',
-        }}>Deny</span>
-      </div>
-    </div>
-  )
-}
-
-function Maintenance({ flipped }: CP) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{
-        width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-        background: flipped ? 'rgba(34,197,94,0.1)' : 'rgba(249,115,22,0.1)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'background 0.4s ease',
-      }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"
-          stroke={flipped ? '#22c55e' : '#f97316'} style={{ transition: 'stroke 0.4s ease' }}>
-          <rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" />
-        </svg>
-      </span>
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>₹2,400 maintenance due</div>
-        <div style={{ marginTop: 5 }}>
-          <span style={{
-            display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '3px 9px', borderRadius: 20,
-            background: flipped ? '#dcfce7' : '#fff7ed',
-            color: flipped ? '#16a34a' : '#ea580c',
-            border: `1px solid ${flipped ? '#86efac' : '#fed7aa'}`,
-            transition: 'all 0.4s ease',
-          }}>{flipped ? '✓ Paid' : 'Pending'}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function Handover({ flipped }: CP) {
-  return (
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
-      {flipped && (
-        <span style={{
-          position: 'absolute', top: 0, left: 0, height: '100%', width: '50%',
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
-          animation: 'heroShimmer 0.9s ease forwards', pointerEvents: 'none',
-        }} />
+      {!flipped && (
+        <>
+          <Div />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button style={{
+              flex: 1, fontSize: 11, fontWeight: 600, padding: '7px 0', borderRadius: 8,
+              background: T.greenBg, color: T.greenText,
+              border: `1px solid ${T.greenBorder}`, cursor: 'default',
+            }}>Allow entry</button>
+            <button style={{
+              flex: 1, fontSize: 11, fontWeight: 600, padding: '7px 0', borderRadius: 8,
+              background: T.redBg, color: T.redText,
+              border: `1px solid ${T.redBorder}`, cursor: 'default',
+            }}>Deny</button>
+          </div>
+        </>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <span style={{
-          width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-          background: 'rgba(99,102,241,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+      {flipped && (
+        <>
+          <Div />
+          <div style={{ fontSize: 10.5, color: T.textMid, animation: 'heroFadeIn 0.4s ease' }}>
+            Entry logged · <span style={{ color: T.green, fontWeight: 600 }}>Flat 204</span> approved
+          </div>
+        </>
+      )}
+    </Shell>
+  )
+}
+
+/* ────────────────────────────────────────────
+   CARD 4 — Society Structure creation
+──────────────────────────────────────────── */
+function SocietySetup({ flipped }: CP) {
+  const nodes = [
+    { label: 'Society', depth: 0 },
+    { label: 'Tower A', depth: 1 },
+    { label: 'Tower B', depth: 1 },
+    { label: 'Flat 101 – 410', depth: 2 },
+  ]
+  return (
+    <Shell>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <IconBox color={T.indigo}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
-        </span>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Sunrise Apartments</div>
+        </IconBox>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.text }}>Sunrise Apts</span>
+            <Pill v={flipped ? 'green' : 'indigo'}>{flipped ? 'Live' : 'Setup'}</Pill>
+          </div>
+          <div style={{ fontSize: 10.5, color: T.textMuted, marginTop: 3 }}>2 towers · 48 units</div>
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: 5 }}>
-        {([['48 units', false], ['3 towers', false], ['Ready ✓', true]] as [string, boolean][]).map(([l, hi], i) => (
-          <span key={i} style={{
-            fontSize: 9, fontWeight: 600, padding: '3px 8px', borderRadius: 20,
-            background: hi ? '#dcfce7' : 'rgba(99,102,241,0.08)',
-            color: hi ? '#16a34a' : '#6366f1',
-            border: `1px solid ${hi ? '#86efac' : 'rgba(99,102,241,0.2)'}`,
-          }}>{l}</span>
+      <Div />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {nodes.map((n, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            paddingLeft: n.depth * 14,
+            opacity: flipped ? 1 : (i === 0 ? 1 : i < 3 ? 0.55 : 0.2),
+            transition: `opacity 0.4s ${i * 0.1}s ease`,
+          }}>
+            {n.depth > 0 && <div style={{ width: 10, height: 1, background: T.border, flexShrink: 0 }} />}
+            <div style={{
+              flex: 1, fontSize: 10, fontWeight: 500,
+              color: n.depth === 0 ? T.text : T.textMid,
+              background: T.surface, border: `1px solid ${T.border}`,
+              borderRadius: 6, padding: '3px 8px',
+            }}>{n.label}</div>
+          </div>
         ))}
       </div>
+    </Shell>
+  )
+}
+
+/* ────────────────────────────────────────
+   CARD 5 — Unit Allotment → Onboarded
+──────────────────────────────────────── */
+function UnitAllotment({ flipped }: CP) {
+  return (
+    <Shell>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <IconBox color={T.slate}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </IconBox>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.text }}>Ananya Sharma</span>
+            <Pill v={flipped ? 'green' : 'amber'}>{flipped ? 'Active' : 'Invited'}</Pill>
+          </div>
+          <div style={{ fontSize: 10.5, color: T.textMuted, marginTop: 3 }}>Owner · Tower A · Flat 204</div>
+        </div>
+      </div>
+      <Div />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {[
+          { label: 'Unit', value: 'A-204', done: true },
+          { label: 'Role', value: 'Owner', done: true },
+          { label: 'Access', value: flipped ? 'Granted' : 'Pending', done: flipped },
+        ].map(({ label, value, done }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 10.5, color: T.textMuted }}>{label}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 600, color: done ? T.text : T.amber, transition: 'color 0.4s' }}>{value}</span>
+          </div>
+        ))}
+      </div>
+    </Shell>
+  )
+}
+
+const CARDS = [Complaint, Announcement, Visitor, SocietySetup, UnitAllotment]
+
+/* ──────────────────────────────────────────────────
+   APP CHROME — dark app background inside the phone
+────────────────────────────────────────────────── */
+const CHROME_ITEMS = [
+  /* 0 — Complaints */
+  [
+    { dot: T.red,    title: 'Water leakage',     sub: 'Flat 204 · 2m ago',   pill: 'Open',    pv: 'red'    },
+    { dot: T.green,  title: 'Lift not working',  sub: 'Common · resolved',   pill: 'Done',    pv: 'green'  },
+    { dot: T.amber,  title: 'Parking issue',     sub: 'B-12 · in progress',  pill: 'WIP',     pv: 'amber'  },
+    { dot: T.slate,  title: 'Street light out',  sub: 'Gate 2 · pending',    pill: 'New',     pv: 'slate'  },
+  ],
+  /* 1 — Announcements */
+  [
+    { dot: T.indigo, title: 'Water supply off',  sub: 'Today 10am–2pm',      pill: 'All',     pv: 'indigo' },
+    { dot: T.indigo, title: 'Maintenance work',  sub: 'Sat 9am · Lobby',     pill: 'All',     pv: 'indigo' },
+    { dot: T.slate,  title: 'AGM Meeting',       sub: 'Sunday 11am',         pill: 'All',     pv: 'slate'  },
+    { dot: T.slate,  title: 'New parking rules', sub: 'Effective Monday',    pill: 'Info',    pv: 'slate'  },
+  ],
+  /* 2 — Visitors */
+  [
+    { dot: T.amber,  title: 'Rahul Sharma',      sub: 'Main Gate · now',     pill: 'Waiting', pv: 'amber'  },
+    { dot: T.green,  title: 'Priya Mehta',       sub: 'B Gate · 12m ago',    pill: 'In',      pv: 'green'  },
+    { dot: T.green,  title: 'Swiggy Delivery',   sub: 'Main Gate · 25m',     pill: 'In',      pv: 'green'  },
+    { dot: T.slate,  title: 'Arjun Kapoor',      sub: 'Main Gate · 1h ago',  pill: 'Out',     pv: 'slate'  },
+  ],
+  /* 3 — Society Setup */
+  [
+    { dot: T.green,  title: 'Sunrise Apts',      sub: '48 units · 2 towers', pill: 'Live',    pv: 'green'  },
+    { dot: T.indigo, title: 'Green Valley',      sub: '60 units · setup',    pill: 'Setup',   pv: 'indigo' },
+    { dot: T.slate,  title: 'Palm Heights',      sub: '32 units · draft',    pill: 'Draft',   pv: 'slate'  },
+    { dot: T.amber,  title: 'Blue Ridge',        sub: '24 units · review',   pill: 'Review',  pv: 'amber'  },
+  ],
+  /* 4 — Unit Allotment */
+  [
+    { dot: T.green,  title: 'A-101 · Rohan V',   sub: 'Owner · onboarded',   pill: 'Active',  pv: 'green'  },
+    { dot: T.amber,  title: 'A-204 · Ananya S',  sub: 'Owner · invite sent', pill: 'Invited', pv: 'amber'  },
+    { dot: T.green,  title: 'B-302 · Meera K',   sub: 'Tenant · onboarded',  pill: 'Active',  pv: 'green'  },
+    { dot: T.slate,  title: 'B-401 · vacant',    sub: 'Not allotted yet',    pill: 'Empty',   pv: 'slate'  },
+  ],
+] as const
+
+type PV = 'green' | 'red' | 'amber' | 'indigo' | 'slate'
+
+function AppChrome({ momentIdx }: { momentIdx: number }) {
+  const header = MOMENTS[momentIdx].headerLabel
+  const items  = CHROME_ITEMS[momentIdx]
+
+  const tabActive = [1, 1, 2, 3, 3]
+  const tabs = [
+    { label: 'Home',     icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+    { label: 'Issues',   icon: 'M12 8v4M12 16h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z' },
+    { label: 'Visitors', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+    { label: 'More',     icon: 'M4 6h16M4 12h16M4 18h16' },
+  ]
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+
+      {/* App header */}
+      <div style={{
+        position: 'absolute', top: 44, left: 0, right: 0, height: 44,
+        background: 'rgba(10,14,30,0.98)',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        display: 'flex', alignItems: 'center',
+        padding: '0 14px', justifyContent: 'space-between',
+        zIndex: 2,
+      }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.88)', letterSpacing: '-0.02em' }}>{header}</span>
+        <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+          <div style={{ width: 24, height: 24, borderRadius: 7, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#818cf8)', border: '1px solid rgba(255,255,255,0.15)' }} />
+        </div>
+      </div>
+
+      {/* List rows */}
+      {items.map((item, i) => (
+        <div key={`${momentIdx}-${i}`} style={{
+          position: 'absolute',
+          top: 97 + i * 50,
+          left: 9, right: 9,
+          height: 43,
+          borderRadius: 11,
+          background: i === 0 ? 'rgba(255,255,255,0.065)' : 'rgba(255,255,255,0.028)',
+          border: `1px solid ${i === 0 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)'}`,
+          display: 'flex', alignItems: 'center', padding: '0 10px', gap: 9,
+          zIndex: 1,
+        }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: item.dot, flexShrink: 0, opacity: 0.85 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.32)', marginTop: 2 }}>{item.sub}</div>
+          </div>
+          {(() => {
+            const pv = item.pv as PV
+            const pmap: Record<PV,{bg:string;color:string}> = {
+              green:  { bg:'rgba(22,163,74,0.18)',   color:'#4ade80' },
+              red:    { bg:'rgba(220,38,38,0.18)',   color:'#f87171' },
+              amber:  { bg:'rgba(217,119,6,0.18)',   color:'#fbbf24' },
+              indigo: { bg:'rgba(99,102,241,0.18)',  color:'#a5b4fc' },
+              slate:  { bg:'rgba(100,116,139,0.18)', color:'rgba(255,255,255,0.4)' },
+            }
+            const ps = pmap[pv]
+            return (
+              <span style={{
+                fontSize: 8.5, fontWeight: 600, padding: '2px 7px', borderRadius: 20,
+                background: ps.bg, color: ps.color, flexShrink: 0,
+              }}>{item.pill}</span>
+            )
+          })()}
+        </div>
+      ))}
+
+      {/* Bottom tab bar */}
+      <div style={{
+        position: 'absolute', bottom: 12, left: 8, right: 8,
+        height: 46, borderRadius: 15,
+        background: 'rgba(12,16,32,0.98)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-around', padding: '0 4px',
+        zIndex: 2,
+      }}>
+        {tabs.map(({ label, icon }, i) => {
+          const active = tabActive[momentIdx] === i
+          return (
+            <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '4px 10px' }}>
+              <div style={{
+                width: 26, height: 26, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? 'rgba(99,102,241,0.18)' : 'transparent',
+                transition: 'background 0.3s',
+              }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke={active ? '#818cf8' : 'rgba(255,255,255,0.28)'}
+                  strokeWidth="2" strokeLinecap="round">
+                  <path d={icon}/>
+                </svg>
+              </div>
+              <span style={{ fontSize: 7.5, color: active ? '#818cf8' : 'rgba(255,255,255,0.25)', fontWeight: active ? 600 : 400 }}>{label}</span>
+            </div>
+          )
+        })}
+      </div>
+
     </div>
   )
 }
 
-const CARDS = [Complaint, Announcement, Visitor, Maintenance, Handover]
-const POSITIONS: React.CSSProperties[] = [
-  { top: '44%', left: '50%', transform: 'translate(-50%,-50%)' },
-  { top: '22%', left: '50%', transform: 'translateX(-50%)' },
-  { top: '44%', left: '50%', transform: 'translate(-50%,-50%)' },
-  { top: '46%', left: '50%', transform: 'translate(-50%,-50%)' },
-  { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
-]
+/* ─────────────────────
+   SLOT interface
+───────────────────── */
+interface Slot { idx: number; flipped: boolean; visible: boolean }
 
-interface Slot { idx: number; flipped: boolean; shown: boolean }
-
+/* ─────────────────────────────────────────────
+   MAIN EXPORT
+───────────────────────────────────────────── */
 export default function HeroAnimation() {
   const [time, setTime] = useState('9:41')
-  const [slotA, setSlotA] = useState<Slot>({ idx: 0, flipped: false, shown: false })
-  const [slotB, setSlotB] = useState<Slot>({ idx: 0, flipped: false, shown: false })
+  const [slotA, setSlotA] = useState<Slot>({ idx: 0, flipped: false, visible: false })
+  const [slotB, setSlotB] = useState<Slot>({ idx: 0, flipped: false, visible: false })
   const [activeSlot, setActiveSlot] = useState<'a' | 'b'>('a')
-  const [progressIdx, setProgressIdx] = useState(0)
+  const [momentIdx, setMomentIdx] = useState(0)
 
-  // Real-time clock — initialised client-side to avoid hydration mismatch
+  const jumpFnRef = useRef<((idx: number) => void) | null>(null)
+
+  /* real clock */
   useEffect(() => {
-    function tick() {
+    const tick = () => {
       const n = new Date()
-      setTime(`${n.getHours().toString().padStart(2, '0')}:${n.getMinutes().toString().padStart(2, '0')}`)
+      setTime(`${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}`)
     }
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [])
 
-  // Card cycling
+  /* card cycling */
   useEffect(() => {
     let alive = true
     const timers: ReturnType<typeof setTimeout>[] = []
     let current = 0
     let active: 'a' | 'b' = 'a'
 
-    function upA(s: Partial<Slot>) { setSlotA(p => ({ ...p, ...s })) }
-    function upB(s: Partial<Slot>) { setSlotB(p => ({ ...p, ...s })) }
-    function up(slot: 'a' | 'b', s: Partial<Slot>) { slot === 'a' ? upA(s) : upB(s) }
-    function clearAll() { timers.forEach(clearTimeout); timers.length = 0 }
+    const upA = (s: Partial<Slot>) => setSlotA(p => ({ ...p, ...s }))
+    const upB = (s: Partial<Slot>) => setSlotB(p => ({ ...p, ...s }))
+    const up  = (slot: 'a' | 'b', s: Partial<Slot>) => slot === 'a' ? upA(s) : upB(s)
 
     function run() {
-      clearAll()
       if (!alive) return
-      const incoming: 'a' | 'b' = active === 'a' ? 'b' : 'a'
-      const outgoing: 'a' | 'b' = active
-      setProgressIdx(current)
-      up(incoming, { idx: current, flipped: false, shown: false })
+      const incoming: 'a'|'b' = active === 'a' ? 'b' : 'a'
+      const outgoing            = active
+      setMomentIdx(current)
+      up(incoming, { idx: current, flipped: false, visible: false })
       timers.push(setTimeout(() => {
         if (!alive) return
-        up(incoming, { shown: true })
-        up(outgoing, { shown: false })
+        up(outgoing, { visible: false })
+        up(incoming, { visible: true })
         setActiveSlot(incoming)
         active = incoming
-      }, 16))
-      timers.push(setTimeout(() => { if (alive) up(incoming, { flipped: true }) }, 1100))
+      }, FADE_MS))
+      timers.push(setTimeout(() => { if (alive) up(incoming, { flipped: true }) }, FLIP_AT))
       timers.push(setTimeout(() => {
         if (!alive) return
         current = (current + 1) % 5
         run()
-      }, 2500))
+      }, DURATION))
     }
 
-    upA({ idx: 0, flipped: false, shown: false })
-    timers.push(setTimeout(() => { if (alive) upA({ shown: true }) }, 16))
-    timers.push(setTimeout(() => { if (alive) { current = 1; run() } }, 2500))
-    return () => { alive = false; clearAll() }
+    jumpFnRef.current = (targetIdx: number) => {
+      if (!alive) return
+      timers.forEach(clearTimeout)
+      timers.length = 0
+      current = targetIdx
+      run()
+    }
+
+    upA({ idx: 0, flipped: false, visible: false })
+    timers.push(setTimeout(() => { if (alive) { upA({ visible: true }); setMomentIdx(0) } }, 120))
+    timers.push(setTimeout(() => { if (alive)  upA({ flipped: true }) }, FLIP_AT))
+    timers.push(setTimeout(() => { if (alive) { current = 1; run() } }, DURATION))
+
+    return () => { alive = false; timers.forEach(clearTimeout); jumpFnRef.current = null }
   }, [])
 
-  function renderSlot(slot: Slot, id: 'a' | 'b') {
-    const Card = CARDS[slot.idx]
+  const renderSlot = (slot: Slot, id: 'a' | 'b') => {
+    const CardComp = CARDS[slot.idx]
     const isActive = activeSlot === id
     return (
       <div style={{
-        position: 'absolute', ...POSITIONS[slot.idx],
-        opacity: slot.shown ? 1 : 0,
-        transition: 'opacity 0.35s ease',
-        zIndex: slot.shown ? 10 : 9,
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        opacity: slot.visible ? 1 : 0,
+        transition: `opacity ${FADE_MS}ms ease`,
+        zIndex: slot.visible ? 10 : 9,
         pointerEvents: 'none',
+        width: 'calc(100% - 26px)',
       }}>
-        <div className={isActive && slot.shown ? 'hero-card-hold' : ''}>
-          <div style={{
-            background: 'rgba(255,255,255,0.96)', borderRadius: 14,
-            padding: '13px 15px',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.28), 0 1px 4px rgba(0,0,0,0.12)',
-            minWidth: 188, maxWidth: 215,
-          }}>
-            <Card flipped={slot.flipped} />
-          </div>
+        <div style={{ animation: isActive && slot.visible ? 'heroFloat 4.5s ease-in-out infinite' : 'none' }}>
+          <CardComp flipped={slot.flipped} />
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{
-      position: 'relative', width: '100%', height: '100%',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      minHeight: 520,
-    }}>
+    <>
+      <style>{`
+        @keyframes heroRipple    { 0%{transform:scale(0.82);opacity:1} 100%{transform:scale(1.65);opacity:0} }
+        @keyframes heroShimmer   { 0%{left:-80%} 100%{left:130%} }
+        @keyframes heroFadeIn    { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes heroFloat     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes heroProgressFill { from{width:0%} to{width:100%} }
+        @media (max-width: 900px) { .hero-feature-list { display: none !important; } }
+      `}</style>
 
-      {/* Soft ambient light behind phone — static, no pulse */}
       <div style={{
-        position: 'absolute',
-        width: 280, height: 400,
-        background: 'radial-gradient(ellipse at 40% 50%, rgba(99,102,241,0.13) 0%, rgba(30,64,175,0.06) 50%, transparent 72%)',
-        borderRadius: '50%', pointerEvents: 'none',
-        filter: 'blur(20px)',
-      }} />
+        position: 'relative', width: '100%', height: '100%',
+        display: 'flex', flexDirection: 'row',
+        alignItems: 'center', justifyContent: 'center',
+        gap: 28, minHeight: 560,
+      }}>
 
-      {/* 3D perspective wrapper */}
-      <div style={{ perspective: '1100px', perspectiveOrigin: '48% 42%' }}>
-        <div style={{
-          transform: 'rotateY(-8deg) rotateX(5deg)',
-          transformStyle: 'preserve-3d',
-          position: 'relative',
+        {/* Feature list */}
+        <div className="hero-feature-list" style={{
+          display: 'flex', flexDirection: 'column', gap: 2,
+          width: 130, flexShrink: 0,
         }}>
-
-          {/* Left volume buttons */}
-          {[[22, 36], [31, 52]].map(([topPct, h], i) => (
-            <div key={i} style={{
-              position: 'absolute', left: -3,
-              top: `${topPct}%`, width: 3, height: h,
-              background: 'linear-gradient(to left, #1c2035, #252a42)',
-              borderRadius: '2px 0 0 2px',
-              boxShadow: '-2px 0 6px rgba(0,0,0,0.6)',
-            }} />
+          {MOMENTS.map((m, i) => (
+            <div
+              key={i}
+              onClick={() => { if (momentIdx !== i) jumpFnRef.current?.(i) }}
+              style={{
+                padding: '9px 0 9px 12px',
+                borderLeft: `2px solid ${momentIdx === i ? '#6366f1' : 'transparent'}`,
+                opacity: momentIdx === i ? 1 : 0.28,
+                transition: 'opacity 0.45s ease, border-color 0.45s ease',
+                cursor: momentIdx === i ? 'default' : 'pointer',
+              }}
+            >
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,0.88)', lineHeight: 1.3 }}>
+                {m.label}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.38)', marginTop: 3, lineHeight: 1.4 }}>
+                {m.sublabel}
+              </div>
+            </div>
           ))}
+        </div>
 
-          {/* Right power button */}
+        {/* Phone + progress */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+
+          {/* Soft glow */}
           <div style={{
-            position: 'absolute', right: -3,
-            top: '28%', width: 3, height: 58,
-            background: 'linear-gradient(to right, #1c2035, #252a42)',
-            borderRadius: '0 2px 2px 0',
-            boxShadow: '2px 0 6px rgba(0,0,0,0.6)',
+            position: 'absolute', width: 260, height: 360,
+            background: 'radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.07) 0%, transparent 70%)',
+            borderRadius: '50%', filter: 'blur(18px)', pointerEvents: 'none',
+            top: '50%', left: '50%', transform: 'translate(-50%,-40%)', zIndex: 0,
           }} />
 
-          {/* Phone outer body — titanium-style frame */}
-          <div style={{
-            width: 252, height: 514,
-            borderRadius: 46,
-            background: 'linear-gradient(145deg, #252a3e 0%, #181c2c 25%, #0e1018 55%, #181c2c 80%, #252a3e 100%)',
-            boxShadow: `
-              0 0 0 1px rgba(255,255,255,0.09),
-              0 0 0 2.5px rgba(0,0,0,0.95),
-              -10px 24px 70px rgba(0,0,0,0.75),
-              -4px 8px 24px rgba(0,0,0,0.55),
-              4px -4px 20px rgba(255,255,255,0.02),
-              0 0 0 3.5px rgba(255,255,255,0.04)
-            `,
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
+          {/* Phone 3D wrapper */}
+          <div style={{ perspective: '1100px', perspectiveOrigin: '48% 42%', position: 'relative', zIndex: 1 }}>
+            <div style={{ transform: 'rotateY(-8deg) rotateX(5deg)', transformStyle: 'preserve-3d', position: 'relative' }}>
 
-            {/* Metallic top-edge highlight */}
-            <div style={{
-              position: 'absolute', top: 0, left: '18%', right: '18%', height: 1.5,
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-              zIndex: 60,
-            }} />
-            {/* Subtle bottom glow accent */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: '30%', right: '30%', height: 1.5,
-              background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)',
-              zIndex: 60,
-            }} />
+              {/* Volume buttons */}
+              {[[22,36],[31,52]].map(([t,h],i) => (
+                <div key={i} style={{ position:'absolute', left:-3, top:`${t}%`, width:3, height:h, background:'linear-gradient(to left,#1c2035,#252a42)', borderRadius:'2px 0 0 2px', boxShadow:'-2px 0 6px rgba(0,0,0,0.6)' }} />
+              ))}
+              {/* Power */}
+              <div style={{ position:'absolute', right:-3, top:'28%', width:3, height:58, background:'linear-gradient(to right,#1c2035,#252a42)', borderRadius:'0 2px 2px 0', boxShadow:'2px 0 6px rgba(0,0,0,0.6)' }} />
 
-            {/* Screen — inset from frame */}
-            <div style={{
-              position: 'absolute', inset: '7px 6px',
-              borderRadius: 40,
-              background: 'linear-gradient(160deg, #0d1526 0%, #080c1c 60%, #060810 100%)',
-              overflow: 'hidden',
-            }}>
-
-              {/* Scan-line texture */}
+              {/* Phone body */}
               <div style={{
-                position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.007) 2px, rgba(255,255,255,0.007) 3px)',
-              }} />
-
-              {/* Screen glare — top-left diagonal reflection */}
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none', borderRadius: 40,
-                background: 'linear-gradient(128deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.025) 22%, transparent 45%)',
-              }} />
-
-              {/* Dynamic island */}
-              <div style={{
-                position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
-                width: 90, height: 24, background: '#000',
-                borderRadius: 12, zIndex: 40,
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.07)',
-              }} />
-
-              {/* Status bar — real time flanks the dynamic island */}
-              <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 44,
-                padding: '0 16px', display: 'flex',
-                alignItems: 'center', justifyContent: 'space-between', zIndex: 35,
+                width:252, height:514, borderRadius:46,
+                background:'linear-gradient(145deg,#252a3e 0%,#181c2c 25%,#0e1018 55%,#181c2c 80%,#252a3e 100%)',
+                boxShadow:'0 0 0 1px rgba(255,255,255,0.09),0 0 0 2.5px rgba(0,0,0,0.95),-10px 24px 70px rgba(0,0,0,0.75),-4px 8px 24px rgba(0,0,0,0.55)',
+                position:'relative', overflow:'hidden',
               }}>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, letterSpacing: '0.01em',
-                  color: 'rgba(255,255,255,0.88)',
-                }}>{time}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {/* Signal bars */}
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5 }}>
-                    {[3, 5, 7, 9].map((h, i) => (
-                      <div key={i} style={{
-                        width: 3, height: h, borderRadius: 1,
-                        background: i < 3 ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.2)',
-                      }} />
-                    ))}
-                  </div>
-                  {/* WiFi */}
-                  <svg width="13" height="10" viewBox="0 0 22 16" fill="none">
-                    <path d="M11 12l1.4-1.4" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round"/>
-                    <path d="M7 8.5c2.2-2.2 5.8-2.2 8 0" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round"/>
-                    <path d="M3.2 4.8C6.4 1.6 14.6 1.6 17.8 4.8" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round"/>
-                    <circle cx="11" cy="14" r="1.5" fill="rgba(255,255,255,0.8)"/>
-                  </svg>
-                  {/* Battery */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <div style={{
-                      width: 22, height: 12,
-                      border: '1.5px solid rgba(255,255,255,0.55)',
-                      borderRadius: 3.5, padding: '2px 2px',
-                    }}>
-                      <div style={{ width: '68%', height: '100%', background: 'rgba(255,255,255,0.75)', borderRadius: 1.5 }} />
+                <div style={{ position:'absolute', top:0, left:'18%', right:'18%', height:1.5, background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.26),transparent)', zIndex:60 }} />
+
+                {/* Screen */}
+                <div style={{ position:'absolute', inset:'7px 6px', borderRadius:40, background:'#060a18', overflow:'hidden' }}>
+
+                  <AppChrome momentIdx={momentIdx} />
+
+                  {/* Scan lines */}
+                  <div style={{ position:'absolute', inset:0, zIndex:3, pointerEvents:'none', backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.004) 2px,rgba(255,255,255,0.004) 3px)' }} />
+                  {/* Glare */}
+                  <div style={{ position:'absolute', inset:0, zIndex:50, pointerEvents:'none', borderRadius:40, background:'linear-gradient(128deg,rgba(255,255,255,0.065) 0%,rgba(255,255,255,0.018) 22%,transparent 44%)' }} />
+
+                  {/* Dynamic island */}
+                  <div style={{ position:'absolute', top:10, left:'50%', transform:'translateX(-50%)', width:90, height:24, background:'#000', borderRadius:12, zIndex:40, boxShadow:'0 0 0 1px rgba(255,255,255,0.07)' }} />
+
+                  {/* Status bar */}
+                  <div style={{ position:'absolute', top:0, left:0, right:0, height:44, padding:'0 16px', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:45 }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.88)' }}>{time}</span>
+                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                      <div style={{ display:'flex', alignItems:'flex-end', gap:1.5 }}>
+                        {[3,5,7,9].map((h,i)=><div key={i} style={{ width:3, height:h, borderRadius:1, background:i<3?'rgba(255,255,255,0.8)':'rgba(255,255,255,0.2)' }}/>)}
+                      </div>
+                      <svg width="13" height="10" viewBox="0 0 22 16" fill="none">
+                        <path d="M11 12l1.4-1.4" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round"/>
+                        <path d="M7 8.5c2.2-2.2 5.8-2.2 8 0" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M3.2 4.8C6.4 1.6 14.6 1.6 17.8 4.8" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round"/>
+                        <circle cx="11" cy="14" r="1.5" fill="rgba(255,255,255,0.8)"/>
+                      </svg>
+                      <div style={{ display:'flex', alignItems:'center', gap:1 }}>
+                        <div style={{ width:22, height:12, border:'1.5px solid rgba(255,255,255,0.55)', borderRadius:3.5, padding:'2px 2px' }}>
+                          <div style={{ width:'68%', height:'100%', background:'rgba(255,255,255,0.75)', borderRadius:1.5 }}/>
+                        </div>
+                        <div style={{ width:2, height:6, background:'rgba(255,255,255,0.4)', borderRadius:'0 1px 1px 0' }}/>
+                      </div>
                     </div>
-                    <div style={{ width: 2, height: 6, background: 'rgba(255,255,255,0.4)', borderRadius: '0 1px 1px 0' }} />
                   </div>
+
+                  {/* Floating cards */}
+                  {renderSlot(slotA,'a')}
+                  {renderSlot(slotB,'b')}
+
+                  {/* Home indicator */}
+                  <div style={{ position:'absolute', bottom:7, left:'50%', transform:'translateX(-50%)', width:68, height:4, background:'rgba(255,255,255,0.26)', borderRadius:2, zIndex:60 }}/>
                 </div>
               </div>
-
-              {/* Cards (two slots for cross-fade) */}
-              {renderSlot(slotA, 'a')}
-              {renderSlot(slotB, 'b')}
-
-              {/* Home indicator */}
-              <div style={{
-                position: 'absolute', bottom: 7, left: '50%', transform: 'translateX(-50%)',
-                width: 68, height: 4, background: 'rgba(255,255,255,0.28)', borderRadius: 2, zIndex: 30,
-              }} />
-
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Grounded shadow ellipse */}
-      <div style={{
-        width: 160, height: 14,
-        background: 'radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%)',
-        marginTop: 8,
-        filter: 'blur(4px)',
-      }} />
+          {/* Ground shadow */}
+          <div style={{ width:160, height:14, background:'radial-gradient(ellipse,rgba(0,0,0,0.48) 0%,transparent 70%)', marginTop:8, filter:'blur(4px)' }}/>
 
-      {/* Progress segments */}
-      <div style={{ display: 'flex', gap: 5, marginTop: 10, width: 240 }}>
-        {[0, 1, 2, 3, 4].map(i => (
-          <div key={i} style={{
-            flex: 1, height: 2, borderRadius: 2,
-            background: 'rgba(255,255,255,0.1)', overflow: 'hidden',
-          }}>
-            {i < progressIdx && (
-              <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: 2 }} />
-            )}
-            {i === progressIdx && (
-              <div key={`p${progressIdx}`} className="hero-progress-fill"
-                style={{ height: '100%', background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: 0 }} />
-            )}
+          {/* Progress bar */}
+          <div style={{ display:'flex', gap:5, marginTop:14, width:200 }}>
+            {[0,1,2,3,4].map(i=>(
+              <div key={i} style={{ flex:1, height:2, borderRadius:2, background:'rgba(255,255,255,0.1)', overflow:'hidden' }}>
+                {i < momentIdx && <div style={{ width:'100%', height:'100%', background:'rgba(255,255,255,0.4)', borderRadius:2 }}/>}
+                {i === momentIdx && <div key={`p${momentIdx}`} style={{ height:'100%', background:'rgba(255,255,255,0.4)', borderRadius:2, animation:`heroProgressFill ${DURATION}ms linear forwards` }}/>}
+              </div>
+            ))}
           </div>
-        ))}
+
+        </div>
+
       </div>
-    </div>
+    </>
   )
 }

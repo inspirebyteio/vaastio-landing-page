@@ -1,4 +1,3 @@
-import Cursor from '@/components/landing/Cursor'
 import ScrollReveal from '@/components/landing/ScrollReveal'
 import Navbar from '@/components/landing/Navbar'
 import Hero from '@/components/landing/Hero'
@@ -18,7 +17,6 @@ const csStrip2 = ['Push Notifications', 'Polls & Voting', 'Asset Booking', 'Emer
 export default function Home() {
   return (
     <>
-      <Cursor />
       <ScrollReveal />
       <Navbar />
       <Hero />

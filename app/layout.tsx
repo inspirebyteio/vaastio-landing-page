@@ -12,20 +12,7 @@ export const metadata: Metadata = {
   description: 'Launch Your Society in 30 Minutes. A multi-tenant SaaS platform for residential society management.',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
+    icon: { url: '/icon.png', sizes: '192x192', type: 'image/png' },
     apple: '/apple-icon.png',
   },
 }

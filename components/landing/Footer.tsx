@@ -1,9 +1,14 @@
+import Image from "next/image"
+
 export default function Footer() {
   return (
     <footer>
       <div className="footer-top">
         <div>
-          <div className="footer-logo">Vaastio</div>
+          <div className="footer-logo" style={{ display: "flex", alignItems: "center", gap: 0 }}>
+            <Image src="/logo-white.png" alt="Vaastio" width={100} height={100} style={{ objectFit: "contain", margin: "-18px" }} />
+            Vaastio
+          </div>
           <div className="footer-tag">Society management. Built for India.</div>
         </div>
         <div className="footer-links">

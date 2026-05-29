@@ -3,17 +3,16 @@ import { useEffect } from 'react'
 
 export default function ScrollReveal() {
   useEffect(() => {
-    function reveal() {
-      document.querySelectorAll('.reveal, .reveal-l, .reveal-r').forEach(el => {
-        const rect = el.getBoundingClientRect()
-        if (rect.top < window.innerHeight * 0.9) {
-          el.classList.add('on')
-        }
-      })
+    function handleAnchorClick(e: MouseEvent) {
+      const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null
+      if (!a) return
+      const target = document.querySelector(a.getAttribute('href')!)
+      if (!target) return
+      e.preventDefault()
+      target.scrollIntoView({ behavior: 'smooth' })
     }
-    reveal()
-    window.addEventListener('scroll', reveal, { passive: true })
-    return () => window.removeEventListener('scroll', reveal)
+    document.addEventListener('click', handleAnchorClick)
+    return () => document.removeEventListener('click', handleAnchorClick)
   }, [])
 
   return null
