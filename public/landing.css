@@ -65,11 +65,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:28px 56px;display:fl
 .hero-caption-l{font-size:10px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:hsla(220, 18%, 97%,.35);margin-top:6px;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-.marquee-wrap{overflow:hidden;background:var(--dark-2);border-top:1px solid rgba(217,224,232,.08);border-bottom:1px solid rgba(217,224,232,.08);padding:20px 0;}
-.marquee-track{display:flex;animation:ticker 26s linear infinite;white-space:nowrap;}
-.marquee-item{display:inline-flex;align-items:center;gap:28px;padding:0 28px;font-family:'Montserrat',sans-serif;font-size:17px;font-weight:600;font-style:italic;color:hsla(220, 18%, 97%,.18);letter-spacing:.04em;}
-.msep{width:4px;height:4px;background:var(--gold);border-radius:50%;opacity:.45;flex-shrink:0;}
-@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-wrap{overflow:hidden;background:var(--dark-2);border-top:1px solid rgba(217,224,232,.08);border-bottom:1px solid rgba(217,224,232,.08);padding:8px 0 0;}
+.marquee-track{display:flex;align-items:flex-end;animation:ticker 60s linear infinite;}
+@keyframes winFlicker{0%,84%,100%{opacity:.52}87%{opacity:.18}92%{opacity:.4}}
+.wf1{opacity:.52;animation:winFlicker 8.4s 0s ease-in-out infinite}
+.wf2{opacity:.52;animation:winFlicker 12.7s 2.4s ease-in-out infinite}
+.wf3{opacity:.52;animation:winFlicker 9.9s 5.1s ease-in-out infinite}
+.wf4{opacity:.52;animation:winFlicker 15.2s 1.6s ease-in-out infinite}
+.wf5{opacity:.52;animation:winFlicker 10.8s 7.3s ease-in-out infinite}
+.wf6{opacity:.52;animation:winFlicker 18.1s 4.2s ease-in-out infinite}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-20%)}}
 .how{background:var(--cream);padding:140px 56px;position:relative;overflow:hidden;}
 .sec-label{font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:56px;display:flex;align-items:center;gap:14px;}
 .sec-label::after{content:'';width:48px;height:1px;background:rgba(217,224,232,.4);}
