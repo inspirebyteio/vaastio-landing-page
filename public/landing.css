@@ -84,13 +84,16 @@ nav.nav-scrolled{padding:16px 56px;background:rgba(47,62,78,0.88);backdrop-filte
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--cream-2);}
 .step{background:var(--cream);padding:56px 44px;position:relative;overflow:hidden;transition:background .3s;}
 .step::after{content:'';position:absolute;left:0;bottom:0;width:100%;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.4,0,.2,1);}
-.step:hover{background:#000000;border-top-color:var(--gold);}
+.step:hover{background:var(--dark-bg);}
 .step:hover::after{transform:scaleX(1);}
-.step-n{font-family:'Montserrat',sans-serif;font-size:80px;font-weight:700;font-style:italic;color:var(--gold-dim);line-height:1;margin-bottom:28px;}
-.step:hover .step-n{color:var(--gold-line);transition:color 0.3s ease;}
-.step-t{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:14px;}
-.step-b{font-size:14px;font-weight:300;line-height:1.9;color:var(--ink-soft);}
-.step-b strong{color:var(--ink-mid);font-weight:400;}
+.step-n{font-family:'Montserrat',sans-serif;font-size:80px;font-weight:700;font-style:italic;color:var(--gold-dim);line-height:1;margin-bottom:28px;transition:color .3s ease;}
+.step:hover .step-n{color:rgba(217,224,232,0.18);}
+.step-t{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:14px;transition:color .3s ease;}
+.step:hover .step-t{color:var(--cream);}
+.step-b{font-size:14px;font-weight:300;line-height:1.9;color:var(--ink-soft);transition:color .3s ease;}
+.step:hover .step-b{color:hsla(220,18%,97%,.45);}
+.step-b strong{color:var(--ink-mid);font-weight:400;transition:color .3s ease;}
+.step:hover .step-b strong{color:hsla(220,18%,97%,.65);}
 .features{background:var(--dark-bg);padding:140px 56px;position:relative;overflow:hidden;}
 .features::before{content:'';position:absolute;top:0;right:12%;width:1px;height:100%;background:linear-gradient(to bottom,transparent,rgba(217,224,232,.07) 25%,rgba(217,224,232,.07) 75%,transparent);}
 .feat-label{font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:56px;display:flex;align-items:center;gap:14px;}
