@@ -5,7 +5,6 @@ import Marquee from '@/components/landing/Marquee'
 import HowItWorks from '@/components/landing/HowItWorks'
 import CsStrip from '@/components/landing/CsStrip'
 import DemoSection from '@/components/landing/DemoSection'
-import Showcase from '@/components/landing/Showcase'
 import BuilderStrip from '@/components/landing/BuilderStrip'
 import Waitlist from '@/components/landing/Waitlist'
 import Footer from '@/components/landing/Footer'
@@ -23,7 +22,6 @@ export default function Home() {
       <HowItWorks />
       <CsStrip items={csStrip1} />
       <DemoSection />
-      <Showcase />
       <CsStrip items={csStrip2} />
       <BuilderStrip />
       <Waitlist />
