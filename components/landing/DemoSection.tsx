@@ -1,3 +1,105 @@
+'use client'
+import { useState } from 'react'
+
+const AW = 185
+const AH = Math.round(AW * 844 / 390)  // 400
+const IW = 136
+const IH = Math.round(IW * 844 / 390)  // 294
+const CW = 340
+const CH = 465
+
+function DualPhone({ a, b }: {
+  a: { img: string; label: string }
+  b: { img: string; label: string }
+}) {
+  const [active, setActive] = useState(0)
+  const isA = active === 0
+
+  // A: left when active, right when inactive
+  const aLeft = isA ? 8 : CW - IW - 8
+  const aTop  = isA ? 18 : 108
+  const aW    = isA ? AW : IW
+  const aH    = isA ? AH : IH
+
+  // B: right when inactive (A active), left when active
+  const bLeft = !isA ? 8 : CW - IW - 8
+  const bTop  = !isA ? 18 : 108
+  const bW    = !isA ? AW : IW
+  const bH    = !isA ? AH : IH
+
+  const phone = (
+    img: string, label: string,
+    left: number, top: number, w: number, h: number,
+    isActive: boolean, onClick: () => void,
+  ) => (
+    <div
+      onClick={onClick}
+      style={{
+        position: 'absolute', left, top, width: w,
+        zIndex: isActive ? 2 : 1,
+        opacity: isActive ? 1 : 0.55,
+        cursor: isActive ? 'default' : 'pointer',
+        transition: 'left 0.45s cubic-bezier(0.4,0,0.2,1), top 0.45s cubic-bezier(0.4,0,0.2,1), width 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s ease',
+      }}
+    >
+      <div style={{
+        width: '100%', height: h,
+        borderRadius: isActive ? 30 : 22,
+        border: `1.5px solid rgba(255,255,255,${isActive ? 0.11 : 0.06})`,
+        boxShadow: isActive
+          ? '0 20px 56px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)'
+          : '0 6px 20px rgba(0,0,0,0.4)',
+        overflow: 'hidden',
+        background: '#08101a',
+        position: 'relative',
+        transition: 'height 0.45s cubic-bezier(0.4,0,0.2,1), border-radius 0.45s ease, box-shadow 0.45s ease',
+      }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={img} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+        {/* Dynamic island */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 30, background: '#08101a', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 4 }}>
+          <div style={{ width: 64, height: 19, background: '#000', borderRadius: 10 }} />
+        </div>
+        {/* Home bar */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 18, background: '#08101a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 46, height: 3, background: 'rgba(255,255,255,0.18)', borderRadius: 2 }} />
+        </div>
+      </div>
+      <div style={{
+        marginTop: 9, textAlign: 'center',
+        fontSize: 9, fontWeight: 500, letterSpacing: '0.16em',
+        textTransform: 'uppercase' as const,
+        color: `rgba(217,224,232,${isActive ? 0.42 : 0.2})`,
+        transition: 'color 0.45s ease',
+      }}>{label}</div>
+    </div>
+  )
+
+  return (
+    <div style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}>
+      {phone(a.img, a.label, aLeft, aTop, aW, aH, isA,  () => setActive(0))}
+      {phone(b.img, b.label, bLeft, bTop, bW, bH, !isA, () => setActive(1))}
+    </div>
+  )
+}
+
+function FeatText({ eyebrow, title, em, body, pills }: {
+  eyebrow: string; title: string; em: string; body: string; pills: string[]
+}) {
+  return (
+    <div className="feat-row-text">
+      <div className="feat-row-eyebrow">{eyebrow}</div>
+      <h3 className="feat-row-h">{title}<br /><em>{em}</em></h3>
+      <p className="feat-row-body">{body}</p>
+      <div className="feat-row-pills">
+        {pills.map(p => <div key={p} className="feat-row-pill">{p}</div>)}
+      </div>
+    </div>
+  )
+}
+
+const PH = (label: string) => `https://placehold.co/390x844/0f1923/c4ccd5?text=${encodeURIComponent(label)}`
+
 export default function DemoSection() {
   return (
     <section className="feat-alt" id="demo">
@@ -10,91 +112,71 @@ export default function DemoSection() {
         </p>
       </div>
 
-      {/* 1 — Complaints: image left, text right */}
+      {/* 1 — Complaints */}
       <div className="feat-row">
         <div className="feat-row-img">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://placehold.co/390x844/3A4B5C/d9e0e8?text=Complaints" alt="Complaints screen" />
+          <DualPhone
+            a={{ img: PH('Resident'), label: 'Resident' }}
+            b={{ img: PH('Admin'),    label: 'Admin' }}
+          />
         </div>
-        <div className="feat-row-text">
-          <div className="feat-row-eyebrow">Complaints</div>
-          <h3 className="feat-row-h">Raise a complaint.<br /><em>Know it&apos;s heard.</em></h3>
-          <p className="feat-row-body">
-            Residents raise complaints with photos and a category. Admins are notified instantly.
-            Status updates keep everyone informed. Nothing gets lost in a WhatsApp group.
-          </p>
-          <div className="feat-row-pills">
-            <div className="feat-row-pill">19 categories</div>
-            <div className="feat-row-pill">Photo evidence</div>
-            <div className="feat-row-pill">Public or private</div>
-            <div className="feat-row-pill">Real-time status</div>
-          </div>
+        <FeatText
+          eyebrow="Complaints"
+          title="Raise a complaint."
+          em="Know it's heard."
+          body="Residents raise complaints with photos and a category. Admins are notified instantly. Status updates keep everyone in the loop. Nothing gets lost in a WhatsApp group."
+          pills={['19 categories', 'Photo evidence', 'Public or private', 'Real-time status']}
+        />
+      </div>
+
+      {/* 2 — Visitors */}
+      <div className="feat-row">
+        <FeatText
+          eyebrow="Visitor Management"
+          title="Every visitor."
+          em="Logged and approved."
+          body="Gate staff log every visitor as they arrive. Residents get a notification and decide — allow or deny. Every entry tracked, every exit recorded. No register. No guesswork."
+          pills={['Instant notifications', 'Allow or deny', 'Entry logged', 'Gate staff app']}
+        />
+        <div className="feat-row-img">
+          <DualPhone
+            a={{ img: PH('Gatekeeper'), label: 'Gatekeeper' }}
+            b={{ img: PH('Resident'),   label: 'Resident' }}
+          />
         </div>
       </div>
 
-      {/* 2 — Visitors: text left, image right */}
+      {/* 3 — Announcements */}
       <div className="feat-row">
-        <div className="feat-row-text">
-          <div className="feat-row-eyebrow">Visitor Management</div>
-          <h3 className="feat-row-h">Every visitor.<br /><em>Logged and approved.</em></h3>
-          <p className="feat-row-body">
-            Gate staff log every visitor as they arrive. Residents get a notification and decide —
-            allow or deny. Every entry is tracked, every exit recorded. No register. No guesswork.
-          </p>
-          <div className="feat-row-pills">
-            <div className="feat-row-pill">Instant notifications</div>
-            <div className="feat-row-pill">Allow or deny</div>
-            <div className="feat-row-pill">Entry logged</div>
-            <div className="feat-row-pill">Gate staff app</div>
-          </div>
-        </div>
         <div className="feat-row-img">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://placehold.co/390x844/3A4B5C/d9e0e8?text=Visitors" alt="Visitor management screen" />
+          <DualPhone
+            a={{ img: PH('Admin'),    label: 'Admin' }}
+            b={{ img: PH('Resident'), label: 'Resident' }}
+          />
         </div>
+        <FeatText
+          eyebrow="Announcements"
+          title="Say it once."
+          em="Everyone hears it."
+          body="Post an announcement and every resident gets notified instantly — society-wide or targeted to a specific tower or wing. No chaos. No missed updates."
+          pills={['Society-wide or targeted', 'Push notifications', 'Scheduled posts', 'Read receipts']}
+        />
       </div>
 
-      {/* 3 — Announcements: image left, text right */}
+      {/* 4 — Society Structure */}
       <div className="feat-row">
+        <FeatText
+          eyebrow="Society Setup"
+          title="Build any structure."
+          em="In minutes."
+          body="Add towers, wings, floors, and units — or villas, plots, independent floors. Whatever your layout, Vaastio maps it exactly. No workarounds. No templates."
+          pills={['Towers & wings', 'Villa communities', 'Mixed layouts', 'Bulk add units']}
+        />
         <div className="feat-row-img">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://placehold.co/390x844/3A4B5C/d9e0e8?text=Announcements" alt="Announcements screen" />
-        </div>
-        <div className="feat-row-text">
-          <div className="feat-row-eyebrow">Announcements</div>
-          <h3 className="feat-row-h">Say it once.<br /><em>Everyone hears it.</em></h3>
-          <p className="feat-row-body">
-            Post an announcement and every resident gets notified instantly — society-wide or
-            targeted to a specific tower or wing. No chaos. No missed updates.
-          </p>
-          <div className="feat-row-pills">
-            <div className="feat-row-pill">Society-wide or targeted</div>
-            <div className="feat-row-pill">Push notifications</div>
-            <div className="feat-row-pill">Scheduled posts</div>
-            <div className="feat-row-pill">Read receipts</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 4 — Society Structure: text left, image right */}
-      <div className="feat-row">
-        <div className="feat-row-text">
-          <div className="feat-row-eyebrow">Society Setup</div>
-          <h3 className="feat-row-h">Build any structure.<br /><em>In minutes.</em></h3>
-          <p className="feat-row-body">
-            Add towers, wings, floors, and units — or villas, plots, independent floors. Whatever
-            your layout, Vaastio maps it exactly. No workarounds. No templates.
-          </p>
-          <div className="feat-row-pills">
-            <div className="feat-row-pill">Towers &amp; wings</div>
-            <div className="feat-row-pill">Villa communities</div>
-            <div className="feat-row-pill">Mixed layouts</div>
-            <div className="feat-row-pill">Bulk add units</div>
-          </div>
-        </div>
-        <div className="feat-row-img">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://placehold.co/390x844/3A4B5C/d9e0e8?text=Structure" alt="Society structure screen" />
+          <DualPhone
+            a={{ img: PH('Builder'),   label: 'Builder' }}
+            b={{ img: PH('Structure'), label: 'Structure' }}
+          />
         </div>
       </div>
 
