@@ -6,7 +6,7 @@ export default function HowItWorks() {
         <h2 className="how-title">Three steps.<br />That&apos;s it.</h2>
         <p className="how-sub">
           No training sessions. No lengthy onboarding. Set up your society, bring your people in,
-          and everything starts working — the same day.
+          and everything starts working, from day one.
         </p>
       </div>
       <div className="steps">

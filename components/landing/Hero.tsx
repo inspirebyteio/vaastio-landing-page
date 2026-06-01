@@ -41,14 +41,15 @@ export default function Hero() {
     <section className="hero">
       <div className="hero-left">
         <div className="hero-inner">
+          <div className="hero-tag">Where Societies Start Organized</div>
           <h1 className="hero-h1">
-            Your society.<br />
+            Your society,<br />
             Managed the<br />
             right way.
           </h1>
           <p className="hero-desc">
             Vaastio gives builders and RWAs a platform to set up, manage, and run
-            their society — <br />structure to residents, complaints to visitors.
+            their society.
           </p>
           <div className="hero-actions">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
