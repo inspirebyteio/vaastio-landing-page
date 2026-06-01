@@ -34,7 +34,7 @@ nav.nav-scrolled{padding:16px 56px;background:rgba(47,62,78,0.88);backdrop-filte
 .nav-right{display:flex;gap:36px;align-items:center;}
 .nav-link{font-size:11px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:hsla(220, 18%, 97%,.45);text-decoration:none;transition:color .3s;}
 .nav-link:hover{color:var(--gold);}
-.nav-cta{font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-line);padding:10px 24px;text-decoration:none;transition:all .3s;}
+.nav-cta{font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-line);padding:10px 24px;text-decoration:none;transition:all .3s;background:none;font-family:'Montserrat',sans-serif;cursor:pointer;}
 .nav-cta:hover{background:var(--gold);color:var(--ink);}
 .hero{position:relative;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
 .hero-left{position:relative;display:flex;flex-direction:column;justify-content:center;padding:100px 64px 100px 56px;z-index:2;background:var(--dark-bg);}
@@ -46,7 +46,7 @@ nav.nav-scrolled{padding:16px 56px;background:rgba(47,62,78,0.88);backdrop-filte
 .hero-h1 em{font-style:italic;color:var(--gold);display:block;}
 .hero-desc{font-size:15px;font-weight:300;line-height:1.85;color:hsla(220, 18%, 97%,.5);max-width:380px;margin-bottom:56px;}
 .hero-actions{display:flex;flex-direction:column;align-items:flex-start;gap:20px;}
-.btn-gold{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--ink);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:18px 40px;text-decoration:none;transition:all .35s;position:relative;overflow:hidden;}
+.btn-gold{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--ink);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:18px 40px;text-decoration:none;transition:all .35s;position:relative;overflow:hidden;border:none;cursor:pointer;}
 .btn-gold::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
 .btn-gold:hover::after{transform:translateX(0);}
 .btn-ghost{font-size:11px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:hsla(220, 18%, 97%,.35);text-decoration:none;transition:color .3s;border-bottom:1px solid transparent;padding-bottom:2px;}

@@ -106,10 +106,8 @@ export default function DemoSection() {
 
       <div className="feat-alt-header">
         <div className="feat-alt-label">See it in action</div>
-        <h2 className="feat-alt-h">Built for every moment<br />that matters.</h2>
-        <p className="feat-alt-sub">
-          From the first complaint to the last visitor log — Vaastio handles it all, seamlessly.
-        </p>
+        <h2 className="feat-alt-h">The product, up close.</h2>
+        <p className="feat-alt-sub">Tap the smaller screen to switch perspectives.</p>
       </div>
 
       {/* 1 — Complaints */}

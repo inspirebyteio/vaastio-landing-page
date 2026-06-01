@@ -60,12 +60,12 @@ export default function Hero() {
                   <AppStoreBadge />
                   <PlayStoreBadge />
                 </div>
-                <a href="#waitlist" className="btn-gold" style={{ background: '#ffffff', color: '#2F3E4E', fontSize: 10, padding: '8px 18px', letterSpacing: '.12em', gap: 6 }}>
-                  Request Early Access
+                <button data-tally-open="vGxeJQ" className="btn-gold" style={{ background: '#ffffff', color: '#2F3E4E', fontSize: 10, padding: '8px 18px', letterSpacing: '.12em', gap: 6 }}>
+                  Get Early Access
                   <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
                     <path d="M2.5 7h9M8 3.5L11.5 7 8 10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </a>
+                </button>
               </div>
             </div>
           </div>

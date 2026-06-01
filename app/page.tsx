@@ -18,8 +18,8 @@ export default function Home() {
       <Marquee />
       <HowItWorks />
       <DemoSection />
-      <BuilderStrip />
       <Waitlist />
+      <BuilderStrip />
       <Footer />
     </>
   )

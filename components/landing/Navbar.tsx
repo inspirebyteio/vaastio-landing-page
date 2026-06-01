@@ -21,7 +21,7 @@ export default function Navbar() {
         <a href="#how" className="nav-link">How it works</a>
         <a href="#demo" className="nav-link">Features</a>
         <a href="/builders" className="nav-link">For Builders</a>
-        <a href="#waitlist" className="nav-cta">Join Waitlist</a>
+        <button data-tally-open="vGxeJQ" className="nav-cta">Get Early Access</button>
       </div>
     </nav>
   )
