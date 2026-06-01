@@ -163,19 +163,19 @@ export default function DemoSection() {
         />
       </div>
 
-      {/* 4 — Society Structure */}
+      {/* 4 — Unit Assignment */}
       <div className="feat-row">
         <FeatText
-          eyebrow="Society Setup"
-          title="Build any structure."
-          em="In minutes."
-          body="Add towers, wings, floors, and units — or villas, plots, independent floors. Whatever your layout, Vaastio maps it exactly. No workarounds. No templates."
-          pills={['Towers & wings', 'Villa communities', 'Mixed layouts', 'Bulk add units']}
+          eyebrow="Unit Assignment"
+          title="Assign a unit."
+          em="Resident is home."
+          body="Builder adds a phone number to a unit — optionally pre-fills the resident's details. The resident gets an invite, logs in, sees their unit already set up, and they're in. That's it."
+          pills={['Phone number invite', 'Builder pre-fills details', 'Resident confirms on login', 'Instant access granted']}
         />
         <div className="feat-row-img">
           <DualPhone
-            a={{ img: PH('Builder'),   label: 'Builder' }}
-            b={{ img: PH('Structure'), label: 'Structure' }}
+            a={{ img: PH('Builder'),  label: 'Builder' }}
+            b={{ img: PH('Resident'), label: 'Resident' }}
           />
         </div>
       </div>
