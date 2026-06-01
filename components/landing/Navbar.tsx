@@ -20,7 +20,7 @@ export default function Navbar() {
       <div className="nav-right">
         <a href="#how" className="nav-link">How it works</a>
         <a href="#demo" className="nav-link">Features</a>
-        <a href="#preview" className="nav-link">Preview</a>
+        <a href="/builders" className="nav-link">For Builders</a>
         <a href="#waitlist" className="nav-cta">Join Waitlist</a>
       </div>
     </nav>

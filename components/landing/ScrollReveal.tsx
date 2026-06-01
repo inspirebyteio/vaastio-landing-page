@@ -6,7 +6,9 @@ export default function ScrollReveal() {
     function handleAnchorClick(e: MouseEvent) {
       const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null
       if (!a) return
-      const target = document.querySelector(a.getAttribute('href')!)
+      const href = a.getAttribute('href')
+      if (!href || href === '#') return
+      const target = document.querySelector(href)
       if (!target) return
       e.preventDefault()
       target.scrollIntoView({ behavior: 'smooth' })
