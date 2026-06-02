@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Zap, Droplets, Volume2, Car, Megaphone, Wrench, Users, AlertTriangle, PartyPopper, Pin, ArrowLeft, Plus } from 'lucide-react'
 
 // ── Phone frame dimensions ────────────────────────────────────────────────────
@@ -693,13 +693,55 @@ function TabBar({ activeIdx }: { activeIdx: number }) {
 }
 
 // ── Dual phone component ──────────────────────────────────────────────────────
-function DualPhone({ a, b }: {
+function DualPhone({ a, b, staggerDelay = 0 }: {
   a: { screen: React.ReactNode; label: string; activeTab: number }
   b: { screen: React.ReactNode; label: string; activeTab: number }
+  staggerDelay?: number
 }) {
   const [active, setActive] = useState(0)
   const time = useTime()
   const isA = active === 0
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null)
+  const hoveredRef   = useRef(false)
+  const inViewRef    = useRef(false)
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+  }, [])
+
+  const startTimer = useCallback(() => {
+    stopTimer()
+    timerRef.current = setInterval(() => {
+      if (inViewRef.current && !hoveredRef.current)
+        setActive(prev => prev === 0 ? 1 : 0)
+    }, 3500)
+  }, [stopTimer])
+
+  // Viewport observer — only run when visible, with staggered start
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    let staggerT: ReturnType<typeof setTimeout> | null = null
+    const obs = new IntersectionObserver(([entry]) => {
+      inViewRef.current = entry.isIntersecting
+      if (entry.isIntersecting) {
+        staggerT = setTimeout(startTimer, staggerDelay)
+      } else {
+        if (staggerT) { clearTimeout(staggerT); staggerT = null }
+        stopTimer()
+      }
+    }, { threshold: 0.3 })
+    obs.observe(el)
+    return () => { obs.disconnect(); stopTimer(); if (staggerT) clearTimeout(staggerT) }
+  }, [staggerDelay, startTimer, stopTimer])
+
+  // Manual switch resets the auto-timer so next auto-switch is 3.5s away
+  const handleSwitch = useCallback((idx: number) => {
+    setActive(idx)
+    if (inViewRef.current && !hoveredRef.current) startTimer()
+  }, [startTimer])
 
   const aLeft = isA ? 8 : CW - IW - 8
   const aTop  = isA ? 18 : 108
@@ -818,9 +860,14 @@ function DualPhone({ a, b }: {
   )
 
   return (
-    <div style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}>
-      {phone(a.screen, a.label, aLeft, aTop, aW, aH, isA,  () => setActive(0), a.activeTab)}
-      {phone(b.screen, b.label, bLeft, bTop, bW, bH, !isA, () => setActive(1), b.activeTab)}
+    <div
+      ref={containerRef}
+      onMouseEnter={() => { hoveredRef.current = true;  stopTimer() }}
+      onMouseLeave={() => { hoveredRef.current = false; if (inViewRef.current) startTimer() }}
+      style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}
+    >
+      {phone(a.screen, a.label, aLeft, aTop, aW, aH, isA,  () => handleSwitch(0), a.activeTab)}
+      {phone(b.screen, b.label, bLeft, bTop, bW, bH, !isA, () => handleSwitch(1), b.activeTab)}
     </div>
   )
 }
@@ -858,6 +905,7 @@ export default function DemoSection() {
           <DualPhone
             a={{ screen: <ComplaintsListScreen/>, label: 'Resident', activeTab: 1 }}
             b={{ screen: <ComplaintDetailScreen/>, label: 'Admin',    activeTab: 1 }}
+            staggerDelay={0}
           />
         </div>
         <FeatText
@@ -882,6 +930,7 @@ export default function DemoSection() {
           <DualPhone
             a={{ screen: <GatekeeperScreen/>,       label: 'Gatekeeper', activeTab: 2 }}
             b={{ screen: <ResidentApprovalScreen/>, label: 'Resident',   activeTab: 2 }}
+            staggerDelay={800}
           />
         </div>
       </div>
@@ -892,6 +941,7 @@ export default function DemoSection() {
           <DualPhone
             a={{ screen: <AdminAnnouncementsScreen/>,    label: 'Admin',    activeTab: 3 }}
             b={{ screen: <ResidentAnnouncementsScreen/>, label: 'Resident', activeTab: 3 }}
+            staggerDelay={1600}
           />
         </div>
         <FeatText
@@ -916,6 +966,7 @@ export default function DemoSection() {
           <DualPhone
             a={{ screen: <BuilderAssignScreen/>, label: 'Builder',  activeTab: 0 }}
             b={{ screen: <ResidentUnitScreen/>,  label: 'Resident', activeTab: 0 }}
+            staggerDelay={2400}
           />
         </div>
       </div>
