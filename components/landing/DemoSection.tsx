@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Zap, Droplets, Volume2, Car, Megaphone, Wrench, Users, AlertTriangle, PartyPopper, Pin, ArrowLeft, Plus } from 'lucide-react'
 
 // ── Phone frame dimensions ────────────────────────────────────────────────────
 const AW = 185
@@ -8,6 +9,9 @@ const IW = 136
 const IH = Math.round(IW * 844 / 390)  // 294
 const CW = 340
 const CH = 465
+const TAB_H = 28
+const SB_H  = 26   // status-bar height (lives inside display glass)
+const HI_H  = 12   // home-indicator height (lives inside display glass)
 
 // ── App design tokens (from source) ──────────────────────────────────────────
 const A = {
@@ -25,12 +29,51 @@ const A = {
 }
 
 // ── Announcement category colours ─────────────────────────────────────────────
-const ANN: Record<string, { bg: string; text: string; icon: string }> = {
-  GENERAL:     { bg: '#f3f4f6', text: '#6b7280', icon: '📢' },
-  MAINTENANCE: { bg: '#fff7ed', text: '#ea580c', icon: '🔧' },
-  MEETING:     { bg: '#eff6ff', text: '#2563eb', icon: '👥' },
-  EMERGENCY:   { bg: '#fef2f2', text: '#dc2626', icon: '⚠️' },
-  CELEBRATION: { bg: '#faf5ff', text: '#9333ea', icon: '🎉' },
+type LucideComp = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>
+const ANN: Record<string, { bg: string; text: string; Icon: LucideComp }> = {
+  GENERAL:     { bg: '#f3f4f6', text: '#6b7280', Icon: Megaphone },
+  MAINTENANCE: { bg: '#fff7ed', text: '#ea580c', Icon: Wrench },
+  MEETING:     { bg: '#eff6ff', text: '#2563eb', Icon: Users },
+  EMERGENCY:   { bg: '#fef2f2', text: '#dc2626', Icon: AlertTriangle },
+  CELEBRATION: { bg: '#faf5ff', text: '#9333ea', Icon: PartyPopper },
+}
+
+// ── Status bar hooks + icons ──────────────────────────────────────────────────
+function useTime() {
+  const [time, setTime] = useState('9:41')
+  useEffect(() => {
+    const fmt = () => {
+      const now = new Date()
+      const h = now.getHours() % 12 || 12
+      const m = String(now.getMinutes()).padStart(2, '0')
+      return `${h}:${m}`
+    }
+    setTime(fmt())
+    const id = setInterval(() => setTime(fmt()), 30000)
+    return () => clearInterval(id)
+  }, [])
+  return time
+}
+
+
+function WifiIcon() {
+  return (
+    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" style={{ display: 'block' }}>
+      <circle cx="5" cy="7.2" r="0.9" fill="#334155"/>
+      <path d="M3 5.5 C3.8 4.4 6.2 4.4 7 5.5" stroke="#334155" strokeWidth="0.9" strokeLinecap="round"/>
+      <path d="M1.2 3.8 C2.4 1.8 7.6 1.8 8.8 3.8" stroke="#334155" strokeWidth="0.9" strokeLinecap="round" opacity="0.5"/>
+    </svg>
+  )
+}
+
+function BatteryIcon() {
+  return (
+    <svg width="16" height="8" viewBox="0 0 16 8" fill="none" style={{ display: 'block' }}>
+      <rect x="0.5" y="1"  width="12.5" height="6" rx="1.5" stroke="#334155" strokeWidth="0.8"/>
+      <rect x="13.5" y="3" width="1.5"  height="2" rx="0.75" fill="#334155" fillOpacity="0.4"/>
+      <rect x="1.5" y="2"  width="8.5"  height="4" rx="0.8"  fill="#334155"/>
+    </svg>
+  )
 }
 
 // ── Tiny shared UI pieces ─────────────────────────────────────────────────────
@@ -45,35 +88,30 @@ function Pill({ text, bg, color }: { text: string; bg: string; color: string }) 
 
 function AppHeader({ title, back }: { title: string; back?: boolean }) {
   return (
-    <div style={{ background: A.header, padding: '7px 8px', display: 'flex',
-      alignItems: 'center', gap: 5, flexShrink: 0 }}>
-      {back && <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, lineHeight: 1 }}>←</span>}
-      <span style={{ color: '#fff', fontSize: 10, fontWeight: 700, flex: 1 }}>{title}</span>
-      {!back && (
-        <div style={{ width: 18, height: 18, borderRadius: 5, background: 'rgba(255,255,255,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, lineHeight: 1 }}>+</span>
-        </div>
-      )}
+    <div style={{ background: A.bg, padding: '8px 10px 6px', display: 'flex',
+      alignItems: 'center', gap: 6, flexShrink: 0,
+      borderBottom: `1px solid ${A.border}` }}>
+      {back && <ArrowLeft size={11} color={A.text} strokeWidth={2}/>}
+      <span style={{ color: A.text, fontSize: 11, fontWeight: 700 }}>{title}</span>
     </div>
   )
 }
 
 // ── Row helpers ───────────────────────────────────────────────────────────────
 
-function ComplaintRow({ icon, title, meta, status, statusBg, statusColor }:
-  { icon: string; title: string; meta: string; status: string; statusBg: string; statusColor: string }) {
+function ComplaintRow({ Icon, title, meta, status, statusBg, statusColor }:
+  { Icon: LucideComp; title: string; meta: string; status: string; statusBg: string; statusColor: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px',
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
       background: A.surface, borderBottom: `1px solid ${A.border}` }}>
-      <div style={{ width: 24, height: 24, borderRadius: 6, background: A.indigoBg, flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>
-        {icon}
+      <div style={{ width: 26, height: 26, borderRadius: 7, background: A.indigoBg, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon size={12} color={A.primary} strokeWidth={2}/>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 8.5, fontWeight: 600, color: A.text,
+        <div style={{ fontSize: 9, fontWeight: 600, color: A.text,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
-        <div style={{ fontSize: 7, color: A.subtle, marginTop: 1 }}>{meta}</div>
+        <div style={{ fontSize: 7.5, color: A.subtle, marginTop: 2 }}>{meta}</div>
       </div>
       <Pill text={status} bg={statusBg} color={statusColor}/>
     </div>
@@ -85,17 +123,17 @@ function VisitorRow({ initial, name, flat, type, status, statusBg, statusColor }
   status: string; statusBg: string; statusColor: string
 }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px',
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
       background: A.surface, borderBottom: `1px solid ${A.border}` }}>
-      <div style={{ width: 24, height: 24, borderRadius: 12, background: '#e2e8f0', flexShrink: 0,
+      <div style={{ width: 26, height: 26, borderRadius: 13, background: '#e2e8f0', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 9, fontWeight: 700, color: A.subtle }}>
+        fontSize: 10, fontWeight: 700, color: A.subtle }}>
         {initial}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 8.5, fontWeight: 600, color: A.text,
+        <div style={{ fontSize: 9, fontWeight: 600, color: A.text,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-        <div style={{ fontSize: 7, color: A.subtle, marginTop: 1 }}>{flat} · {type}</div>
+        <div style={{ fontSize: 7.5, color: A.subtle, marginTop: 2 }}>{flat} · {type}</div>
       </div>
       <Pill text={status} bg={statusBg} color={statusColor}/>
     </div>
@@ -107,20 +145,20 @@ function AnnouncementRow({ cat, title, body, author, time, pinned }: {
 }) {
   const c = ANN[cat]
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '6px 8px',
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '9px 10px',
       background: A.surface, borderBottom: `1px solid ${A.border}` }}>
-      <div style={{ width: 26, height: 26, borderRadius: 7, background: c.bg, flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
-        {c.icon}
+      <div style={{ width: 28, height: 28, borderRadius: 8, background: c.bg, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <c.Icon size={12} color={c.text} strokeWidth={2}/>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 1 }}>
-          <div style={{ fontSize: 8.5, fontWeight: 700, color: A.text, flex: 1,
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 2 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: A.text, flex: 1,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
-          {pinned && <span style={{ fontSize: 8 }}>📌</span>}
+          {pinned && <Pin size={8} color={A.subtle} strokeWidth={2}/>}
         </div>
-        <div style={{ fontSize: 7, color: A.subtle, lineHeight: 1.45, marginBottom: 3,
-          overflow: 'hidden', maxHeight: 20 }}>{body}</div>
+        <div style={{ fontSize: 7, color: A.subtle, lineHeight: 1.5, marginBottom: 3,
+          overflow: 'hidden', maxHeight: 22 }}>{body}</div>
         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
           <span style={{ fontSize: 6.5, padding: '1px 4px', borderRadius: 3,
             background: c.bg, color: c.text, fontWeight: 700 }}>
@@ -139,7 +177,7 @@ function ComplaintsListScreen() {
   return (
     <div style={{ background: A.bg, height: '100%', display: 'flex', flexDirection: 'column',
       overflow: 'hidden', position: 'relative' }}>
-      <AppHeader title="Complaints"/>
+      <AppHeader title="Complaints" back/>
       {/* Filter chips */}
       <div style={{ display: 'flex', gap: 4, padding: '5px 8px', background: A.surface,
         borderBottom: `1px solid ${A.border}`, flexShrink: 0 }}>
@@ -155,20 +193,19 @@ function ComplaintsListScreen() {
       </div>
       {/* List */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        <div style={{ padding: '5px 8px 3px', fontSize: 7, fontWeight: 700, color: A.subtle,
+        <div style={{ padding: '8px 10px 4px', fontSize: 7, fontWeight: 700, color: A.subtle,
           letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>My Complaints</div>
-        <ComplaintRow icon="⚡" title="Lift not working"   meta="Lift · 2d ago"    status="Open"     statusBg={A.openBg}     statusColor={A.openText}/>
-        <ComplaintRow icon="💧" title="No water supply"    meta="Water · 5d ago"   status="Resolved" statusBg={A.resolvedBg} statusColor={A.resolvedText}/>
-        <div style={{ padding: '5px 8px 3px', fontSize: 7, fontWeight: 700, color: A.subtle,
+        <ComplaintRow Icon={Zap}      title="Elevator B2 not working"  meta="Lift · 2d ago"      status="Open"     statusBg={A.openBg}     statusColor={A.openText}/>
+        <ComplaintRow Icon={Droplets} title="No water since 6 AM"      meta="Plumbing · 5d ago"  status="Resolved" statusBg={A.resolvedBg} statusColor={A.resolvedText}/>
+        <div style={{ padding: '8px 10px 4px', fontSize: 7, fontWeight: 700, color: A.subtle,
           letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>Public Complaints</div>
-        <ComplaintRow icon="🔊" title="Noise at night"     meta="Noise · 1d ago"   status="Open"     statusBg={A.openBg}     statusColor={A.openText}/>
-        <ComplaintRow icon="🚗" title="Parking blocked"    meta="Parking · 3d ago" status="Open"     statusBg={A.openBg}     statusColor={A.openText}/>
+        <ComplaintRow Icon={Volume2}  title="Loud music — flat B-302"  meta="Noise · 1d ago"     status="Open"     statusBg={A.openBg}     statusColor={A.openText}/>
       </div>
       {/* FAB */}
       <div style={{ position: 'absolute', bottom: 10, right: 8 }}>
         <div style={{ width: 28, height: 28, borderRadius: 14, background: A.primary,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 3px 8px rgba(0,0,0,0.22)', fontSize: 16, color: '#fff', lineHeight: 1 }}>+</div>
+          boxShadow: '0 3px 8px rgba(0,0,0,0.22)' }}><Plus size={14} color="#fff" strokeWidth={2.5}/></div>
       </div>
     </div>
   )
@@ -178,7 +215,7 @@ function ComplaintDetailScreen() {
   return (
     <div style={{ background: A.bg, height: '100%', display: 'flex', flexDirection: 'column',
       overflow: 'hidden' }}>
-      <AppHeader title="Water Leakage" back/>
+      <AppHeader title="Water Seepage" back/>
       <div style={{ flex: 1, padding: '8px', overflow: 'hidden', display: 'flex',
         flexDirection: 'column', gap: 6 }}>
         {/* Status + tags */}
@@ -189,11 +226,11 @@ function ComplaintDetailScreen() {
         </div>
         {/* Title */}
         <div style={{ fontSize: 11, fontWeight: 700, color: A.text, lineHeight: 1.3 }}>
-          Water leakage in corridor, Block B
+          Seepage in B-wing corridor, 2nd floor
         </div>
         {/* Description */}
         <div style={{ fontSize: 7.5, color: A.subtle, lineHeight: 1.5 }}>
-          Water is dripping from the ceiling near the 2nd floor corridor. Started 2 days ago and is getting worse.
+          Water dripping from ceiling near the staircase. Worsening since 2 days — floor gets slippery.
         </div>
         {/* Photo thumbnails */}
         <div style={{ display: 'flex', gap: 4 }}>
@@ -206,7 +243,7 @@ function ComplaintDetailScreen() {
         <div style={{ background: A.surface, borderRadius: 8, padding: '6px 8px',
           border: `1px solid ${A.border}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {[
-            { label: 'Reported by', value: 'Flat 204 · A.K.' },
+            { label: 'Reported by', value: 'Flat 203 · Amit Kumar' },
             { label: 'Category',    value: 'Plumbing' },
             { label: 'Date',        value: '12 Jun 2026' },
           ].map(({ label, value }) => (
@@ -238,9 +275,9 @@ function GatekeeperScreen() {
   return (
     <div style={{ background: A.bg, height: '100%', display: 'flex', flexDirection: 'column',
       overflow: 'hidden', position: 'relative' }}>
-      <AppHeader title="Visitor Log"/>
+      <AppHeader title="Visitor Log" back/>
       {/* Date + summary bar */}
-      <div style={{ padding: '4px 8px', background: A.surface, borderBottom: `1px solid ${A.border}`,
+      <div style={{ padding: '6px 10px', background: A.surface, borderBottom: `1px solid ${A.border}`,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: 7.5, fontWeight: 600, color: A.text }}>Today, 2 Jun</span>
         <span style={{ fontSize: 7, color: A.subtle }}>12 entries · 2 pending</span>
@@ -260,17 +297,16 @@ function GatekeeperScreen() {
       </div>
       {/* Visitor list */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        <VisitorRow initial="R" name="Ram Sharma"         flat="B-401" type="Guest"    status="PENDING" statusBg={A.openBg}     statusColor={A.openText}/>
-        <VisitorRow initial="D" name="Delivery · Amazon"  flat="A-203" type="Delivery" status="ALLOWED" statusBg={A.resolvedBg} statusColor={A.resolvedText}/>
-        <VisitorRow initial="K" name="Kavita Patel"       flat="C-105" type="Guest"    status="PENDING" statusBg={A.openBg}     statusColor={A.openText}/>
-        <VisitorRow initial="E" name="Electrician"        flat="A-304" type="Service"  status="ALLOWED" statusBg={A.resolvedBg} statusColor={A.resolvedText}/>
-        <VisitorRow initial="?" name="Unknown Person"     flat="B-201" type="—"        status="DENIED"  statusBg={A.rejectedBg} statusColor={A.rejectedText}/>
+        <VisitorRow initial="R" name="Rohit Sharma"        flat="B-502" type="Guest"    status="PENDING" statusBg={A.openBg}     statusColor={A.openText}/>
+        <VisitorRow initial="S" name="Swiggy Delivery"    flat="A-203" type="Delivery" status="ALLOWED" statusBg={A.resolvedBg} statusColor={A.resolvedText}/>
+        <VisitorRow initial="K" name="Kavitha Nair"       flat="C-301" type="Guest"    status="ALLOWED" statusBg={A.resolvedBg} statusColor={A.resolvedText}/>
+        <VisitorRow initial="A" name="AC Technician"      flat="A-304" type="Service"  status="PENDING" statusBg={A.openBg}     statusColor={A.openText}/>
       </div>
       {/* FAB */}
       <div style={{ position: 'absolute', bottom: 10, right: 8 }}>
         <div style={{ width: 28, height: 28, borderRadius: 14, background: A.primary,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 3px 8px rgba(0,0,0,0.22)', fontSize: 16, color: '#fff', lineHeight: 1 }}>+</div>
+          boxShadow: '0 3px 8px rgba(0,0,0,0.22)' }}><Plus size={14} color="#fff" strokeWidth={2.5}/></div>
       </div>
     </div>
   )
@@ -292,7 +328,7 @@ function ResidentApprovalScreen() {
             R
           </div>
           <div style={{ textAlign: 'center' as const }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: A.text }}>Ram Sharma</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: A.text }}>Rohit Sharma</div>
             <div style={{ fontSize: 7.5, color: A.subtle, marginTop: 2 }}>Wants to visit · Your flat</div>
           </div>
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -305,7 +341,7 @@ function ResidentApprovalScreen() {
           padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {[
             { label: 'Gate',       value: 'Main Gate' },
-            { label: 'Logged by',  value: 'Suresh (Guard)' },
+            { label: 'Logged by',  value: 'Raju (Guard)' },
             { label: 'Arrived at', value: '6:42 PM' },
           ].map(({ label, value }) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -336,7 +372,7 @@ function AdminAnnouncementsScreen() {
   return (
     <div style={{ background: A.bg, height: '100%', display: 'flex', flexDirection: 'column',
       overflow: 'hidden', position: 'relative' }}>
-      <AppHeader title="Announcements"/>
+      <AppHeader title="Announcements" back/>
       {/* Category chips */}
       <div style={{ display: 'flex', gap: 4, padding: '5px 8px', background: A.surface,
         borderBottom: `1px solid ${A.border}`, flexShrink: 0 }}>
@@ -354,34 +390,28 @@ function AdminAnnouncementsScreen() {
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <AnnouncementRow
           cat="EMERGENCY"
-          title="Water supply off — Sat 8–12 AM"
-          body="Society-wide shutdown for tank cleaning. Please store water in advance."
+          title="Borewell maintenance — Sat 8–12 PM"
+          body="Water supply suspended Saturday. Store water before 8 AM."
           author="Admin" time="2h ago" pinned
         />
         <AnnouncementRow
           cat="MEETING"
-          title="AGM — 15 June, Block A Hall"
-          body="Annual General Meeting to discuss society budget and maintenance."
+          title="AGM — 15 June, Clubhouse"
+          body="Annual general meeting to discuss FY 2026–27 maintenance budget."
           author="Sec." time="1d ago"
         />
         <AnnouncementRow
           cat="MAINTENANCE"
-          title="Lift maintenance — Tower B"
-          body="Lift B2 under maintenance on Friday. Please use B1 or the stairs."
+          title="DG set maintenance — 14 June"
+          body="Generator maintenance on Sunday. Power backup unavailable 10–11 AM."
           author="Admin" time="2d ago"
-        />
-        <AnnouncementRow
-          cat="GENERAL"
-          title="Welcome, new residents!"
-          body="Collect your welcome kit from the society office before 31 Jun."
-          author="Admin" time="5d ago"
         />
       </div>
       {/* FAB */}
       <div style={{ position: 'absolute', bottom: 10, right: 8 }}>
         <div style={{ width: 28, height: 28, borderRadius: 14, background: A.primary,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 3px 8px rgba(0,0,0,0.22)', fontSize: 16, color: '#fff', lineHeight: 1 }}>+</div>
+          boxShadow: '0 3px 8px rgba(0,0,0,0.22)' }}><Plus size={14} color="#fff" strokeWidth={2.5}/></div>
       </div>
     </div>
   )
@@ -396,9 +426,9 @@ function ResidentAnnouncementsScreen() {
       <div style={{ margin: '6px 8px', borderRadius: 8, background: ANN.EMERGENCY.bg,
         border: `1px solid #fecaca`, padding: '6px 8px', display: 'flex', gap: 6,
         alignItems: 'flex-start', flexShrink: 0 }}>
-        <span style={{ fontSize: 12 }}>⚠️</span>
+        <AlertTriangle size={12} color={ANN.EMERGENCY.text} strokeWidth={2}/>
         <div>
-          <div style={{ fontSize: 8, fontWeight: 700, color: ANN.EMERGENCY.text }}>Water off — Sat 8–12 AM</div>
+          <div style={{ fontSize: 8, fontWeight: 700, color: ANN.EMERGENCY.text }}>Borewell maintenance — Sat 8–12 PM</div>
           <div style={{ fontSize: 7, color: '#ef4444', marginTop: 1 }}>Emergency · Pinned by Admin</div>
         </div>
       </div>
@@ -406,27 +436,21 @@ function ResidentAnnouncementsScreen() {
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <AnnouncementRow
           cat="MEETING"
-          title="AGM — 15 June, Block A Hall"
-          body="Annual General Meeting to discuss society budget and maintenance plans."
+          title="AGM — 15 June, Clubhouse"
+          body="Annual general meeting to discuss FY 2026–27 maintenance budget."
           author="Sec." time="1d ago"
         />
         <AnnouncementRow
           cat="MAINTENANCE"
-          title="Lift maintenance — Tower B"
-          body="Lift B2 under maintenance on Friday. Please use B1 or stairs."
+          title="DG set maintenance — 14 June"
+          body="Generator maintenance on Sunday. Power backup unavailable 10–11 AM."
           author="Admin" time="2d ago"
         />
         <AnnouncementRow
           cat="CELEBRATION"
-          title="Diwali celebration — Oct 20"
-          body="Society Diwali event at the club house. All residents welcome!"
+          title="Ganesh Chaturthi — 27 Aug"
+          body="Society celebration at the clubhouse. All residents and families welcome!"
           author="RWA" time="4d ago"
-        />
-        <AnnouncementRow
-          cat="GENERAL"
-          title="Welcome, new residents!"
-          body="Collect your welcome kit from the office before 31 Jun."
-          author="Admin" time="5d ago"
         />
       </div>
     </div>
@@ -473,13 +497,13 @@ function BuilderAssignScreen() {
           const s = STATUS[u.status]
           const selected = u.num === '202'
           return (
-            <div key={u.num} style={{ width: 37, borderRadius: 7, padding: '5px 4px',
+            <div key={u.num} style={{ width: 37, borderRadius: 7, padding: '6px 4px',
               textAlign: 'center' as const,
               background: selected ? A.primary : s.bg,
               border: `1.5px solid ${selected ? A.primary : A.border}`,
               boxShadow: selected ? '0 2px 8px rgba(47,62,78,0.25)' : 'none' }}>
-              <div style={{ fontSize: 8.5, fontWeight: 700, color: selected ? '#fff' : A.text }}>{u.num}</div>
-              <div style={{ fontSize: 6, marginTop: 1, fontWeight: 600,
+              <div style={{ fontSize: 9, fontWeight: 700, color: selected ? '#fff' : A.text }}>{u.num}</div>
+              <div style={{ fontSize: 7, marginTop: 1.5, fontWeight: 600,
                 color: selected ? 'rgba(255,255,255,0.7)' : s.text }}>
                 {selected ? 'Selected' : s.label}
               </div>
@@ -579,13 +603,145 @@ function ResidentUnitScreen() {
   )
 }
 
+// ── Tab bar ───────────────────────────────────────────────────────────────────
+function IconHome({ active }: { active: boolean }) {
+  const c = active ? A.primary : '#94a3b8'
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+      <path d="M6 1.2L11 5.8V11H8V7.5H4V11H1V5.8L6 1.2Z"
+        stroke={c} strokeWidth="1" strokeLinejoin="round"
+        fill={active ? c : 'none'} fillOpacity={active ? 0.14 : 0}/>
+    </svg>
+  )
+}
+function IconComplaints({ active }: { active: boolean }) {
+  const c = active ? A.primary : '#94a3b8'
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+      <path d="M1.5 1.5h9a.75.75 0 01.75.75V7.5a.75.75 0 01-.75.75H4.8L1.5 10.5V2.25a.75.75 0 010-.75z"
+        stroke={c} strokeWidth="1" strokeLinejoin="round"/>
+      <line x1="6" y1="3.8" x2="6" y2="5.8" stroke={c} strokeWidth="1" strokeLinecap="round"/>
+      <circle cx="6" cy="7" r="0.5" fill={c}/>
+    </svg>
+  )
+}
+function IconVisitors({ active }: { active: boolean }) {
+  const c = active ? A.primary : '#94a3b8'
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+      <circle cx="6" cy="4" r="2.2" stroke={c} strokeWidth="1"/>
+      <path d="M1.5 11c0-2.49 2.01-4.5 4.5-4.5s4.5 2.01 4.5 4.5"
+        stroke={c} strokeWidth="1" strokeLinecap="round"/>
+    </svg>
+  )
+}
+function IconUpdates({ active }: { active: boolean }) {
+  const c = active ? A.primary : '#94a3b8'
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+      <path d="M6 1.5a3 3 0 013 3V7.5l1 1.5H2L3 7.5V4.5a3 3 0 013-3z"
+        stroke={c} strokeWidth="1" strokeLinejoin="round"/>
+      <path d="M4.8 10a1.2 1.2 0 002.4 0"
+        stroke={c} strokeWidth="1" strokeLinecap="round"/>
+    </svg>
+  )
+}
+function IconProfile({ active }: { active: boolean }) {
+  const c = active ? A.primary : '#94a3b8'
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: 'block' }}>
+      <circle cx="6" cy="4.5" r="2" stroke={c} strokeWidth="1"/>
+      <path d="M2 11c.5-2.2 2.2-3.5 4-3.5s3.5 1.3 4 3.5"
+        stroke={c} strokeWidth="1" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+const TAB_ITEMS = [
+  { label: 'Home',       Icon: IconHome },
+  { label: 'Complaints', Icon: IconComplaints },
+  { label: 'Visitors',   Icon: IconVisitors },
+  { label: 'Updates',    Icon: IconUpdates },
+  { label: 'Profile',    Icon: IconProfile },
+]
+
+function TabBar({ activeIdx }: { activeIdx: number }) {
+  return (
+    <div style={{
+      position: 'absolute', bottom: HI_H, left: 0, right: 0, height: TAB_H,
+      background: A.surface, borderTop: `1px solid ${A.border}`,
+      display: 'flex', alignItems: 'center', zIndex: 9,
+      paddingLeft: 14, paddingRight: 14,
+    }}>
+      {TAB_ITEMS.map(({ label, Icon }, i) => {
+        const active = i === activeIdx
+        return (
+          <div key={label} style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 2,
+          }}>
+            <Icon active={active}/>
+            <span style={{
+              fontSize: 5.5, fontWeight: active ? 600 : 400,
+              color: active ? A.primary : '#94a3b8', letterSpacing: '0.01em',
+            }}>{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Dual phone component ──────────────────────────────────────────────────────
-function DualPhone({ a, b }: {
-  a: { screen: React.ReactNode; label: string }
-  b: { screen: React.ReactNode; label: string }
+function DualPhone({ a, b, staggerDelay = 0 }: {
+  a: { screen: React.ReactNode; label: string; activeTab: number }
+  b: { screen: React.ReactNode; label: string; activeTab: number }
+  staggerDelay?: number
 }) {
   const [active, setActive] = useState(0)
+  const time = useTime()
   const isA = active === 0
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null)
+  const hoveredRef   = useRef(false)
+  const inViewRef    = useRef(false)
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+  }, [])
+
+  const startTimer = useCallback(() => {
+    stopTimer()
+    timerRef.current = setInterval(() => {
+      if (inViewRef.current && !hoveredRef.current)
+        setActive(prev => prev === 0 ? 1 : 0)
+    }, 3500)
+  }, [stopTimer])
+
+  // Viewport observer — only run when visible, with staggered start
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    let staggerT: ReturnType<typeof setTimeout> | null = null
+    const obs = new IntersectionObserver(([entry]) => {
+      inViewRef.current = entry.isIntersecting
+      if (entry.isIntersecting) {
+        staggerT = setTimeout(startTimer, staggerDelay)
+      } else {
+        if (staggerT) { clearTimeout(staggerT); staggerT = null }
+        stopTimer()
+      }
+    }, { threshold: 0.3 })
+    obs.observe(el)
+    return () => { obs.disconnect(); stopTimer(); if (staggerT) clearTimeout(staggerT) }
+  }, [staggerDelay, startTimer, stopTimer])
+
+  // Manual switch resets the auto-timer so next auto-switch is 3.5s away
+  const handleSwitch = useCallback((idx: number) => {
+    setActive(idx)
+    if (inViewRef.current && !hoveredRef.current) startTimer()
+  }, [startTimer])
 
   const aLeft = isA ? 8 : CW - IW - 8
   const aTop  = isA ? 18 : 108
@@ -600,7 +756,7 @@ function DualPhone({ a, b }: {
   const phone = (
     screen: React.ReactNode, label: string,
     left: number, top: number, w: number, h: number,
-    isActive: boolean, onClick: () => void,
+    isActive: boolean, onClick: () => void, activeTab: number,
   ) => (
     <div
       onClick={onClick}
@@ -612,34 +768,86 @@ function DualPhone({ a, b }: {
         transition: 'left 0.45s cubic-bezier(0.4,0,0.2,1), top 0.45s cubic-bezier(0.4,0,0.2,1), width 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s ease',
       }}
     >
+      {/* Silent toggle, Vol ↑, Vol ↓ — left rail */}
+      {([
+        [h * 0.20, h * 0.05],
+        [h * 0.28, h * 0.12],
+        [h * 0.42, h * 0.12],
+      ] as [number, number][]).map(([t, ht], i) => (
+        <div key={i} style={{
+          position: 'absolute', left: -3, top: t, width: 3, height: ht,
+          borderRadius: '2px 0 0 2px',
+          background: 'linear-gradient(90deg, #1e3045 0%, #0f1e2e 100%)',
+          boxShadow: '-1px 0 3px rgba(0,0,0,0.6)',
+        }}/>
+      ))}
+      {/* Power — right rail */}
+      <div style={{
+        position: 'absolute', right: -3, top: h * 0.30, width: 3, height: h * 0.18,
+        borderRadius: '0 2px 2px 0',
+        background: 'linear-gradient(270deg, #1e3045 0%, #0f1e2e 100%)',
+        boxShadow: '1px 0 3px rgba(0,0,0,0.6)',
+      }}/>
       <div style={{
         width: '100%', height: h,
-        borderRadius: isActive ? 30 : 22,
+        borderRadius: isActive ? 22 : 16,
         border: `1.5px solid rgba(255,255,255,${isActive ? 0.11 : 0.06})`,
         boxShadow: isActive
-          ? '0 20px 56px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)'
-          : '0 6px 20px rgba(0,0,0,0.4)',
-        background: '#08101a',
+          ? '0 20px 56px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4), inset 0 0 0 1.5px rgba(0,0,0,0.9)'
+          : '0 6px 20px rgba(0,0,0,0.4), inset 0 0 0 1.5px rgba(0,0,0,0.9)',
+        background: 'linear-gradient(160deg, #141f2e 0%, #08101a 30%, #08101a 70%, #0c1820 100%)',
         overflow: 'hidden',
         position: 'relative',
         transition: 'height 0.45s cubic-bezier(0.4,0,0.2,1), border-radius 0.45s ease, box-shadow 0.45s ease',
       }}>
-        {/* Screen content — sits between dynamic island and home bar */}
-        <div style={{ position: 'absolute', top: 30, bottom: 18, left: 0, right: 0, overflow: 'hidden' }}>
-          {screen}
+        {/* Display glass — full panel, all app content lives here */}
+        <div style={{
+          position: 'absolute', top: 3, bottom: 3, left: 2, right: 2,
+          overflow: 'hidden',
+          borderRadius: isActive ? 18 : 13,
+          transition: 'border-radius 0.45s ease',
+        }}>
+          {/* Status bar — absolute layout, pill pixel-perfect centered */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: SB_H,
+            background: A.bg, zIndex: 10 }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: 7, fontWeight: 600, color: A.text,
+              letterSpacing: '0.01em', lineHeight: 1 }}>
+              {time}
+            </span>
+            <div style={{ position: 'absolute', left: '50%', top: '50%',
+              transform: 'translate(-50%, -50%)' }}>
+              <div style={{ width: 58, height: 16, background: '#000', borderRadius: 12,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}/>
+            </div>
+            <div style={{ position: 'absolute', right: 8, top: '50%',
+              transform: 'translateY(-50%)',
+              display: 'flex', alignItems: 'center', gap: 3.5 }}>
+              <WifiIcon/>
+              <BatteryIcon/>
+            </div>
+          </div>
+          {/* Screen content */}
+          <div style={{ position: 'absolute', top: SB_H, bottom: TAB_H + HI_H, left: 0, right: 0, overflow: 'hidden' }}>
+            {screen}
+          </div>
+          {/* Tab bar */}
+          <TabBar activeIdx={activeTab}/>
+          {/* Home indicator — app surface, iOS-style pill */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: HI_H,
+            background: A.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ width: 36, height: 3, background: 'rgba(15,23,42,0.18)', borderRadius: 2 }}/>
+          </div>
         </div>
-        {/* Dynamic island */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 30,
-          background: '#08101a', display: 'flex', alignItems: 'flex-end',
-          justifyContent: 'center', paddingBottom: 4, zIndex: 10 }}>
-          <div style={{ width: 64, height: 19, background: '#000', borderRadius: 10 }}/>
-        </div>
-        {/* Home bar */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 18,
-          background: '#08101a', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 10 }}>
-          <div style={{ width: 46, height: 3, background: 'rgba(255,255,255,0.18)', borderRadius: 2 }}/>
-        </div>
+        {/* Glass sheen — chassis layer, pointer-events off */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 20, pointerEvents: 'none',
+          background: 'linear-gradient(155deg, rgba(255,255,255,0.05) 0%, transparent 35%)',
+        }}/>
       </div>
       <div style={{
         marginTop: 9, textAlign: 'center',
@@ -652,9 +860,14 @@ function DualPhone({ a, b }: {
   )
 
   return (
-    <div style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}>
-      {phone(a.screen, a.label, aLeft, aTop, aW, aH, isA,  () => setActive(0))}
-      {phone(b.screen, b.label, bLeft, bTop, bW, bH, !isA, () => setActive(1))}
+    <div
+      ref={containerRef}
+      onMouseEnter={() => { hoveredRef.current = true;  stopTimer() }}
+      onMouseLeave={() => { hoveredRef.current = false; if (inViewRef.current) startTimer() }}
+      style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}
+    >
+      {phone(a.screen, a.label, aLeft, aTop, aW, aH, isA,  () => handleSwitch(0), a.activeTab)}
+      {phone(b.screen, b.label, bLeft, bTop, bW, bH, !isA, () => handleSwitch(1), b.activeTab)}
     </div>
   )
 }
@@ -690,8 +903,9 @@ export default function DemoSection() {
       <div className="feat-row">
         <div className="feat-row-img">
           <DualPhone
-            a={{ screen: <ComplaintsListScreen/>, label: 'Resident' }}
-            b={{ screen: <ComplaintDetailScreen/>, label: 'Admin' }}
+            a={{ screen: <ComplaintsListScreen/>, label: 'Resident', activeTab: 1 }}
+            b={{ screen: <ComplaintDetailScreen/>, label: 'Admin',    activeTab: 1 }}
+            staggerDelay={0}
           />
         </div>
         <FeatText
@@ -714,8 +928,9 @@ export default function DemoSection() {
         />
         <div className="feat-row-img">
           <DualPhone
-            a={{ screen: <GatekeeperScreen/>,      label: 'Gatekeeper' }}
-            b={{ screen: <ResidentApprovalScreen/>, label: 'Resident' }}
+            a={{ screen: <GatekeeperScreen/>,       label: 'Gatekeeper', activeTab: 2 }}
+            b={{ screen: <ResidentApprovalScreen/>, label: 'Resident',   activeTab: 2 }}
+            staggerDelay={800}
           />
         </div>
       </div>
@@ -724,8 +939,9 @@ export default function DemoSection() {
       <div className="feat-row">
         <div className="feat-row-img">
           <DualPhone
-            a={{ screen: <AdminAnnouncementsScreen/>,    label: 'Admin' }}
-            b={{ screen: <ResidentAnnouncementsScreen/>, label: 'Resident' }}
+            a={{ screen: <AdminAnnouncementsScreen/>,    label: 'Admin',    activeTab: 3 }}
+            b={{ screen: <ResidentAnnouncementsScreen/>, label: 'Resident', activeTab: 3 }}
+            staggerDelay={1600}
           />
         </div>
         <FeatText
@@ -748,8 +964,9 @@ export default function DemoSection() {
         />
         <div className="feat-row-img">
           <DualPhone
-            a={{ screen: <BuilderAssignScreen/>, label: 'Builder' }}
-            b={{ screen: <ResidentUnitScreen/>,  label: 'Resident' }}
+            a={{ screen: <BuilderAssignScreen/>, label: 'Builder',  activeTab: 0 }}
+            b={{ screen: <ResidentUnitScreen/>,  label: 'Resident', activeTab: 0 }}
+            staggerDelay={2400}
           />
         </div>
       </div>
