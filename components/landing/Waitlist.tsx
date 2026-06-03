@@ -19,6 +19,7 @@ export default function Waitlist() {
           Get Early Access
         </button>
       </div>
+      <p className="wl-note">Free for 30 days &middot; No setup fee.</p>
       </div>
     </section>
   )

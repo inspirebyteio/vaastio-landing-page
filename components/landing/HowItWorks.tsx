@@ -6,8 +6,7 @@ export default function HowItWorks() {
       <div className="how-head">
         <h2 className="how-title">Three steps.<br />That&apos;s it.</h2>
         <p className="how-sub">
-          No training sessions. No lengthy onboarding. Set up your society, bring your people in,
-          and everything starts working, from day one.
+          Vaastio is designed to be intuitive and user-friendly, so you can focus on what matters most — building your community.
         </p>
       </div>
       <div className="steps">
