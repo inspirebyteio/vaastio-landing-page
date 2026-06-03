@@ -1,6 +1,7 @@
 export default function HowItWorks() {
   return (
     <section className="how light-section" id="how">
+      <div className="container">
       <div className="sec-label">How it works</div>
       <div className="how-head">
         <h2 className="how-title">Three steps.<br />That&apos;s it.</h2>
@@ -34,6 +35,7 @@ export default function HowItWorks() {
             <strong>Everything in one place.</strong> Always running. Always updated.
           </p>
         </div>
+      </div>
       </div>
     </section>
   )

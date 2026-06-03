@@ -900,7 +900,7 @@ export default function DemoSection() {
       </div>
 
       {/* 1 — Complaints */}
-      <div className="feat-row">
+      <div className="feat-row-wrap"><div className="feat-row">
         <div className="feat-row-img">
           <DualPhone
             a={{ screen: <ComplaintsListScreen/>, label: 'Resident', activeTab: 1 }}
@@ -915,10 +915,10 @@ export default function DemoSection() {
           body="Residents raise complaints with photos and a category. Admins are notified instantly. Status updates keep everyone in the loop. Nothing gets lost in a WhatsApp group."
           pills={['19 categories', 'Photo evidence', 'Public or private', 'Real-time status']}
         />
-      </div>
+      </div></div>
 
       {/* 2 — Visitors */}
-      <div className="feat-row">
+      <div className="feat-row-wrap"><div className="feat-row">
         <FeatText
           eyebrow="Visitor Management"
           title="Every visitor."
@@ -933,10 +933,10 @@ export default function DemoSection() {
             staggerDelay={800}
           />
         </div>
-      </div>
+      </div></div>
 
       {/* 3 — Announcements */}
-      <div className="feat-row">
+      <div className="feat-row-wrap"><div className="feat-row">
         <div className="feat-row-img">
           <DualPhone
             a={{ screen: <AdminAnnouncementsScreen/>,    label: 'Admin',    activeTab: 3 }}
@@ -951,10 +951,10 @@ export default function DemoSection() {
           body="Post an announcement and every resident gets notified instantly — society-wide or targeted to a specific tower or wing. No chaos. No missed updates."
           pills={['Society-wide or targeted', 'Push notifications', 'Scheduled posts', 'Read receipts']}
         />
-      </div>
+      </div></div>
 
       {/* 4 — Unit Assignment */}
-      <div className="feat-row">
+      <div className="feat-row-wrap"><div className="feat-row">
         <FeatText
           eyebrow="Unit Assignment"
           title="Assign a unit."
@@ -969,7 +969,7 @@ export default function DemoSection() {
             staggerDelay={2400}
           />
         </div>
-      </div>
+      </div></div>
 
     </section>
   )

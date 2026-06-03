@@ -3,6 +3,7 @@ export default function Waitlist() {
     <section className="waitlist light-section" id="waitlist">
       <div className="wl-arc"></div>
       <div className="wl-arc2"></div>
+      <div className="container">
       <div className="wl-label">Early Access</div>
       <h2 className="wl-title">Get your society live.</h2>
       <p className="wl-sub">
@@ -17,6 +18,7 @@ export default function Waitlist() {
         >
           Get Early Access
         </button>
+      </div>
       </div>
     </section>
   )

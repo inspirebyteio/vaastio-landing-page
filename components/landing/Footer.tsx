@@ -52,6 +52,7 @@ function IconMail() {
 export default function Footer() {
   return (
     <footer>
+      <div className="container">
       <div className="footer-top">
 
         {/* Left — brand + app store badges */}
@@ -119,6 +120,7 @@ export default function Footer() {
           <span className="footer-dot">·</span>
           <a href="https://vaastio.com" target="_blank" rel="noopener noreferrer" className="footer-link">vaastio.com</a>
         </div>
+      </div>
       </div>
     </footer>
   )
