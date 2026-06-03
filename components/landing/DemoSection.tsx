@@ -716,7 +716,7 @@ function DualPhone({ a, b, staggerDelay = 0 }: {
     timerRef.current = setInterval(() => {
       if (inViewRef.current && !hoveredRef.current)
         setActive(prev => prev === 0 ? 1 : 0)
-    }, 3500)
+    }, 2000)
   }, [stopTimer])
 
   // Viewport observer — only run when visible, with staggered start
@@ -897,6 +897,13 @@ export default function DemoSection() {
         <div className="feat-alt-label">See it in action</div>
         <h2 className="feat-alt-h">The product, up close.</h2>
         <p className="feat-alt-sub">Tap the smaller screen to switch perspectives.</p>
+        <button
+          data-tally-open="vGxeJQ"
+          className="btn-ghost"
+          style={{ marginTop: 20, fontSize: 11, letterSpacing: '.14em', color: 'hsla(220,18%,97%,.38)', cursor: 'pointer', background: 'none', border: 'none', borderBottom: '1px solid rgba(217,224,232,.18)', paddingBottom: 2 }}
+        >
+          or, request a demo →
+        </button>
       </div>
 
       {/* 1 — Complaints */}
@@ -913,7 +920,7 @@ export default function DemoSection() {
           title="Raise a complaint."
           em="Know it's heard."
           body="Residents raise complaints with photos and a category. Admins are notified instantly. Status updates keep everyone in the loop. Nothing gets lost in a WhatsApp group."
-          pills={['19 categories', 'Photo evidence', 'Public or private', 'Real-time status']}
+          pills={['Photo evidence', 'Public or private', 'Real-time status']}
         />
       </div></div>
 
@@ -923,8 +930,8 @@ export default function DemoSection() {
           eyebrow="Visitor Management"
           title="Every visitor."
           em="Logged and approved."
-          body="Gate staff log every visitor as they arrive. Residents get a notification and decide — allow or deny. Every entry tracked, every exit recorded. No register. No guesswork."
-          pills={['Instant notifications', 'Allow or deny', 'Entry logged', 'Gate staff app']}
+          body="Gate staff log every visitor as they arrive. Residents get a notification and decide to allow or deny. Every entry tracked, every exit recorded. No register. No guesswork."
+          pills={['Instant notifications', 'Allow or deny', 'Pre approvals']}
         />
         <div className="feat-row-img">
           <DualPhone
@@ -948,8 +955,8 @@ export default function DemoSection() {
           eyebrow="Announcements"
           title="Say it once."
           em="Everyone hears it."
-          body="Post an announcement and every resident gets notified instantly — society-wide or targeted to a specific tower or wing. No chaos. No missed updates."
-          pills={['Society-wide or targeted', 'Push notifications', 'Scheduled posts', 'Read receipts']}
+          body="Post an announcement and every resident gets notified instantly society-wide. No chaos. No missed updates."
+          pills={['Broadcast Announcement', 'Push notifications', 'Pinned emergencies']}
         />
       </div></div>
 

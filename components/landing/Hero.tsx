@@ -68,6 +68,9 @@ export default function Hero() {
                   </svg>
                 </button>
               </div>
+              <p style={{ fontSize: 11, fontWeight: 400, color: 'rgba(217,224,232,0.3)', letterSpacing: '.06em', marginTop: 4 }}>
+                Free for 30 days &middot; No setup fee.
+              </p>
             </div>
           </div>
         </div>
