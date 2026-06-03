@@ -849,25 +849,26 @@ function DualPhone({ a, b, staggerDelay = 0 }: {
           background: 'linear-gradient(155deg, rgba(255,255,255,0.05) 0%, transparent 35%)',
         }}/>
       </div>
-      <div style={{
-        marginTop: 9, textAlign: 'center',
-        fontSize: 9, fontWeight: 500, letterSpacing: '0.16em',
-        textTransform: 'uppercase' as const,
-        color: `rgba(217,224,232,${isActive ? 0.42 : 0.2})`,
-        transition: 'color 0.45s ease',
-      }}>{label}</div>
     </div>
   )
 
   return (
-    <div
-      ref={containerRef}
-      onMouseEnter={() => { hoveredRef.current = true;  stopTimer() }}
-      onMouseLeave={() => { hoveredRef.current = false; if (inViewRef.current) startTimer() }}
-      style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}
-    >
-      {phone(a.screen, a.label, aLeft, aTop, aW, aH, isA,  () => handleSwitch(0), a.activeTab)}
-      {phone(b.screen, b.label, bLeft, bTop, bW, bH, !isA, () => handleSwitch(1), b.activeTab)}
+    <div className="dual-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div
+        ref={containerRef}
+        className="dual-stage"
+        onMouseEnter={() => { hoveredRef.current = true;  stopTimer() }}
+        onMouseLeave={() => { hoveredRef.current = false; if (inViewRef.current) startTimer() }}
+        style={{ position: 'relative', width: CW, height: CH, flexShrink: 0 }}
+      >
+        {phone(a.screen, a.label, aLeft, aTop, aW, aH, isA,  () => handleSwitch(0), a.activeTab)}
+        {phone(b.screen, b.label, bLeft, bTop, bW, bH, !isA, () => handleSwitch(1), b.activeTab)}
+      </div>
+      {/* Mobile-only toggle — guaranteed tappable, no fragile gestures */}
+      <div className="dual-tabs">
+        <button type="button" className="dual-tab" data-active={isA} onClick={() => handleSwitch(0)}>{a.label}</button>
+        <button type="button" className="dual-tab" data-active={!isA} onClick={() => handleSwitch(1)}>{b.label}</button>
+      </div>
     </div>
   )
 }
