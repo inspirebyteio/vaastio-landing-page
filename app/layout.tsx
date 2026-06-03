@@ -8,7 +8,7 @@ const montserrat = Montserrat({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Vaasto - Society Management Platform',
+  title: 'Vaastio - Society Management Platform',
   description: 'Launch Your Society in 30 Minutes. A multi-tenant SaaS platform for residential society management.',
   generator: 'v0.app',
   icons: {
