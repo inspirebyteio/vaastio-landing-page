@@ -579,14 +579,20 @@ export default function HeroAnimation() {
         @keyframes heroFadeIn    { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:translateY(0)} }
         @keyframes heroFloat     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
         @keyframes heroProgressFill { from{width:0%} to{width:100%} }
-        @media (max-width: 900px) { .hero-feature-list { display: none !important; } }
+        @media (max-width: 900px) {
+          .hero-anim-inner { gap: 8px !important; }
+          .hero-feature-list { width: 100px !important; flex-shrink: 0; }
+          .hero-feature-list > div { padding: 6px 0 6px 8px !important; }
+          .hero-fl-label { font-size: 10px !important; }
+          .hero-fl-sub { font-size: 8.5px !important; margin-top: 2px !important; }
+        }
       `}</style>
 
-      <div style={{
+      <div className="hero-anim-inner" style={{
         position: 'relative', width: '100%', height: '100%',
         display: 'flex', flexDirection: 'row',
         alignItems: 'center', justifyContent: 'center',
-        gap: 28, minHeight: 560,
+        gap: 28,
       }}>
 
         {/* Feature list */}
@@ -606,10 +612,10 @@ export default function HeroAnimation() {
                 cursor: momentIdx === i ? 'default' : 'pointer',
               }}
             >
-              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,0.88)', lineHeight: 1.3 }}>
+              <div className="hero-fl-label" style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,0.88)', lineHeight: 1.3 }}>
                 {m.label}
               </div>
-              <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.38)', marginTop: 3, lineHeight: 1.4 }}>
+              <div className="hero-fl-sub" style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.38)', marginTop: 3, lineHeight: 1.4 }}>
                 {m.sublabel}
               </div>
             </div>
