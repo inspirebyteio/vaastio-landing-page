@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="stylesheet" href="/landing.css" />
+        <link rel="stylesheet" href="/landing.css?v=2" />
       </head>
       <body className={`${montserrat.className} antialiased`} suppressHydrationWarning>
         {children}
