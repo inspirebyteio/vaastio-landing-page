@@ -896,8 +896,8 @@ export default function DemoSection() {
 
       <div className="feat-alt-header">
         <div className="feat-alt-label">See it in action</div>
-        <h2 className="feat-alt-h">The product, up close.</h2>
-        <p className="feat-alt-sub">Tap the smaller screen to switch perspectives.</p>
+        <h2 className="feat-alt-h">Built for everyone in a community.</h2>
+        <p className="feat-alt-sub">See how each interaction works for everyone involved.</p>
         <button
           data-tally-open="vGxeJQ"
           className="btn-ghost"
