@@ -16,14 +16,12 @@ export const metadata: Metadata = {
     description:
       'Set up a project, onboard buyers as you sell, and hand a fully-running society to the RWA — with nothing lost in the transition.',
     url: 'https://vaastio.com/builders',
-    images: [{ url: '/building-sky.jpg', width: 1200, height: 630, alt: 'Vaastio for builders' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'For Builders — Vaastio',
     description:
       'Set up a project, onboard buyers as you sell, and hand a fully-running society to the RWA — with nothing lost in the transition.',
-    images: ['/building-sky.jpg'],
   },
 }
 

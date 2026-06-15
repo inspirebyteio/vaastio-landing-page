@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service — Vaastio',
+  description: 'The terms governing use of the Vaastio app and website, for builders, admins, residents, and gatekeepers.',
+  alternates: { canonical: '/terms' },
+}
 
 const sections = [
   {
