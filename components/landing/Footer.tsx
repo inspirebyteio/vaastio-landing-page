@@ -85,11 +85,11 @@ export default function Footer() {
         {/* Right — product nav + social icons */}
         <div className="footer-right">
           <div className="footer-links">
-            <a href="#how"      className="footer-link">How it works</a>
+            <a href="/#how"      className="footer-link">How it works</a>
             <div className="fsep"></div>
-            <a href="#demo"     className="footer-link">Features</a>
+            <a href="/#demo"     className="footer-link">Features</a>
             <div className="fsep"></div>
-            <a href="#waitlist" className="footer-link">Early Access</a>
+            <a href="/#waitlist" className="footer-link">Early Access</a>
             <div className="fsep"></div>
             <a href="/builders" className="footer-link">For Builders</a>
           </div>
